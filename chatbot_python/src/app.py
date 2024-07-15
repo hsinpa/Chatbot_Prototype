@@ -2,10 +2,13 @@ import asyncio
 from dotenv import load_dotenv
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
+from src.router.chatbot_route import router as chatbot_router
+from src.websocket.websocket_manager import websocket_manager
 
 load_dotenv()
 
 app = FastAPI(openapi_url="/docs/openapi.json", docs_url="/docs")
+app.include_router(chatbot_router)
 
 origins = [
     "http://localhost",
@@ -26,10 +29,10 @@ async def root():
     return {"version": "0.0.1"}
 
 
-# @app.websocket("/ws/{client_id}")
-# async def websocket_endpoint(websocket: WebSocket, client_id: str):
-#     await websocket_manager.connect(client_id, websocket)
-#     try:
-#         await websocket.send_text('HOW ARE YOU')
-#     except WebSocketDisconnect:
-#         websocket_manager.disconnect(client_id)
+@app.websocket("/ws/{client_id}")
+async def websocket_endpoint(websocket: WebSocket, client_id: str):
+    await websocket_manager.connect(client_id, websocket)
+    try:
+        await websocket.send_text('HOW ARE YOU')
+    except WebSocketDisconnect:
+        websocket_manager.disconnect(client_id)
