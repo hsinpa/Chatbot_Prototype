@@ -3,7 +3,7 @@ import { UserInputBubbleComp } from "../components/UserInputBubble";
 import { MessageInterface } from "../types/chatbot_type";
 import { useMessageStore } from "../zusland/MessageStore";
 
-const RenderBubbleComp = function(comp: MessageInterface | undefined) {
+const RenderBubbleComp = function({comp}: {comp : MessageInterface | undefined}) {
     if (comp == undefined) return <></>
 
     if (comp.type == 'ai')   {
@@ -25,7 +25,7 @@ export const MainContentView = function() {
             <div className="px-4 py-2">
                 {
                     message_id_array.map(x => {
-                        return RenderBubbleComp(get_message_func(x));
+                        return <RenderBubbleComp key={x} comp={get_message_func(x)}></RenderBubbleComp>;
                     })
                 }
 
