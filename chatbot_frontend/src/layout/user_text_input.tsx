@@ -1,6 +1,10 @@
 import { useEffect, useState } from "react"
+import { useMessageStore } from "../zusland/MessageStore";
+import { MessageInterface } from "../types/chatbot_type";
+import { v4 as uuidv4 } from 'uuid';
 
 export const User_Text_Input = function() {
+    const push_message_callback = useMessageStore(s=>s.push_message);
     const [is_focus, set_focus] = useState(false);
     const [textarea_value, set_textarea] = useState('');
 
@@ -19,9 +23,12 @@ export const User_Text_Input = function() {
 
     let fire_submit_event = function() {
         console.log(textarea_value);
-        var lineBreaks = textarea_value.match(/\n/g);
-        console.log('line break '+lineBreaks?.length)
 
+        let message: MessageInterface = {
+            _id: uuidv4(), content: textarea_value, type:'user', version: 1
+        }
+
+        push_message_callback(message);
         set_textarea('');
     }
     
