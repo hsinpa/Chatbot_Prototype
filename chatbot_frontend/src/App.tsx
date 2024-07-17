@@ -26,19 +26,6 @@ function App() {
         <ChatRoomView></ChatRoomView>
       </div>
     </wsContext.Provider>
-
-    // <div className='flex content-center justify-center '>
-    //   <div className='w-9/12 flex flex-col min-h-screen justify-between overflow-hidden'>
-    //     <Header_Comp chatbot_name='Hsinpa bot'></Header_Comp>
-
-    //     <div className='flex-1 relative flex-wrap max-h-fit'>
-    //         <MainContentView></MainContentView>
-    //     </div>
-        
-    //     <User_Text_Input></User_Text_Input>
-    //   </div>
-    // </div>
-
   )
 }
 

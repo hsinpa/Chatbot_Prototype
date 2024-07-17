@@ -16,9 +16,9 @@ class WebSocketManager:
     def __init__(self):
         self.active_connections: typing.Dict[str, WebSocket] = {}
 
-    async def send(self, target_id: str, data: str):
-        if target_id in self.active_connections:
-            await self.active_connections[target_id].send_text(data)
+    async def send(self, client_id: str, data: str):
+        if client_id in self.active_connections:
+            await self.active_connections[client_id].send_text(data)
 
     async def connect(self, client_id: str, websocket: WebSocket):
         await websocket.accept()

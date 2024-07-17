@@ -35,7 +35,7 @@ class ChatbotGraphAgent(GraphAgent):
 
         result = await chain.ainvoke(variables)
 
-        return {'messages': [result]}
+        return {'final_message': result}
 
     def create_graph(self):
         g_workflow = StateGraph(ChatbotAgentState)

@@ -25,11 +25,8 @@ A summary of historical record between you and user
 {summary}
 '''
 
-With all the given information and bot setting,
-You first make a brief thought on what the user is asking.
-And finally output a reply message in JSON format
-
-reply: str = Field('', description='A message, bot reply to human message')
+Make a self introduction if you haven't already.
+Finally, with all the given information and bot setting, start the conversation
 """
 
 GENERAL_HUMAN_PROMPT = """\

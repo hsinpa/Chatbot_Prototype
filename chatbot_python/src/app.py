@@ -7,6 +7,7 @@ from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 from src.router.chatbot_route import router as chatbot_router
 from src.websocket.websocket_manager import websocket_manager
+from websocket.socket_static import SocketEvent
 
 load_dotenv()
 
@@ -36,8 +37,13 @@ async def root():
 async def websocket_endpoint(websocket: WebSocket):
     g_user_id = str(uuid.uuid4())
     print(g_user_id)
+
     await websocket_manager.connect(g_user_id, websocket)
     try:
-        await websocket.send_text(json.dumps({'_id': g_user_id}))
+        await websocket.send_text(json.dumps({'event': SocketEvent.open, '_id': g_user_id}))
+
+        while True:
+            data = await websocket.receive_text()
+            print(data)
     except WebSocketDisconnect:
         websocket_manager.disconnect(g_user_id)

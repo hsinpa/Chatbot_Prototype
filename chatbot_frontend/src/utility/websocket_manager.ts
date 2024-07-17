@@ -9,6 +9,15 @@ export class WebsocketManager extends EventSystem {
         return this._id;
     }
 
+    get is_connect() {
+        return this._socket != null && this._socket.readyState == WebSocket.OPEN
+    }
+
+    send(json_string: string) {
+        if (this._socket?.readyState == WebSocket.OPEN)
+            this._socket?.send(json_string);
+    }
+
     connect(url: string) {
         this._socket = new WebSocket(url);
 
@@ -22,6 +31,9 @@ export class WebsocketManager extends EventSystem {
 
             try {
                 let json = JSON.parse(event.data);
+
+                if (!('event' in json)) return;
+
                 if ('_id' in json) 
                     this._id = json['id']
 
