@@ -10,7 +10,7 @@ class ChatbotAgentState(TypedDict):
     intention: str
 
 
-class DataChunkType(Enum):
+class DataChunkType(str, Enum):
     Chunk = 'chunk'
     Complete = 'complete'
 

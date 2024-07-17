@@ -13,9 +13,10 @@ async def streaming_exec(websockets: WebSocketManager, session_id: str, stream: 
     results = ''
 
     async for chunk in stream:
-        stream_data = StreamingDataChunkType(session_id=session_id, data=chunk, type=DataChunkType.Chunk)
+        data_chunk = str(chunk)
+        stream_data = StreamingDataChunkType(session_id=session_id, data=data_chunk, token='', type=DataChunkType.Chunk)
         json_string = {'event': SocketEvent.bot, **stream_data.model_dump()}
         await websockets.send(session_id=session_id, data=json.dumps(json_string))
-        results = results + chunk
+        results = results + data_chunk
 
     return results

@@ -28,8 +28,15 @@ export const User_Text_Input = function() {
             _id: uuidv4(), content: textarea_value, type:'user', version: 1
         }
 
+        fetch('http://localhost:8842/chatbot/chat_stream', {method:'post', headers:{"Content-Type": "application/json"}, body: JSON.stringify({
+            text: textarea_value,
+            session_id: 'hi',
+            token: '0'
+        })})
         push_message_callback(message);
         set_textarea('');
+
+
     }
     
     let on_textarea_change = function(e: React.FormEvent<HTMLTextAreaElement>) {
