@@ -1,6 +1,8 @@
 from typing import Optional
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
+
+from websocket.websocket_manager import WebSocketManager
 
 
 class ChatbotInput(BaseModel):
@@ -9,8 +11,6 @@ class ChatbotInput(BaseModel):
     token: Optional[str]
 
 
-class ChatbotResponse(BaseModel):
-    text: str
+class ChatbotStreamingInput(BaseModel):
     session_id: str
-    token_id: str
-    index: int
+    token: str

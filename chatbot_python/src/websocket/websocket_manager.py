@@ -5,26 +5,33 @@ from fastapi import WebSocket
 
 
 class WebSocketManager:
-    _instance = None
+    __instance = None
 
-    # Singleton
-    def __new__(cls, *args, **kwargs):
-        if cls._instance is None:
-            cls._instance = super().__new__(cls)
-        return cls._instance
+    def __new__(cls):
+        if cls.__instance is None:
+            cls.__instance = super(WebSocketManager, cls).__new__(cls)
+
+        return cls.__instance
 
     def __init__(self):
         self.active_connections: typing.Dict[str, WebSocket] = {}
 
     async def send(self, session_id: str, data: str):
+        print('socket session', session_id)
+        print('socket active_connections', self.active_connections)
+
         if session_id in self.active_connections:
+            print('socket send', data)
             await self.active_connections[session_id].send_text(data)
 
     async def connect(self, session_id: str, websocket: WebSocket):
         await websocket.accept()
         self.active_connections[session_id] = websocket
+        print('active_connections', self.active_connections)
 
     def disconnect(self, session_id: str):
+        print(f'socket disconnect {session_id}')
+
         if session_id in self.active_connections:
             del self.active_connections[session_id]
 
@@ -33,3 +40,7 @@ class WebSocketManager:
 
 
 websocket_manager = WebSocketManager()
+
+
+def get_websocket():
+    return websocket_manager

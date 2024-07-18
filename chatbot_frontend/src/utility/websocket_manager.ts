@@ -35,7 +35,7 @@ export class WebsocketManager extends EventSystem {
                 if (!('event' in json)) return;
 
                 if ('_id' in json) 
-                    this._id = json['id']
+                    this._id = json['_id']
 
                 this.Notify('websocket', json);
             } catch {

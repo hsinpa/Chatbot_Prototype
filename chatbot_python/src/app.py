@@ -3,13 +3,15 @@ import json
 import uuid
 
 from dotenv import load_dotenv
-from fastapi import FastAPI, WebSocket, WebSocketDisconnect
+from fastapi import FastAPI, WebSocket, WebSocketDisconnect, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from src.router.chatbot_route import router as chatbot_router
-from src.websocket.websocket_manager import websocket_manager
 from websocket.socket_static import SocketEvent
+from websocket.websocket_manager import get_websocket
 
 load_dotenv()
+
+
 
 app = FastAPI(openapi_url="/docs/openapi.json", docs_url="/docs")
 app.include_router(chatbot_router)
@@ -28,6 +30,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+
 @app.get("/")
 async def root():
     return {"version": "0.0.1"}
@@ -37,7 +40,7 @@ async def root():
 async def websocket_endpoint(websocket: WebSocket):
     g_user_id = str(uuid.uuid4())
     print(g_user_id)
-
+    websocket_manager = get_websocket()
     await websocket_manager.connect(g_user_id, websocket)
     try:
         await websocket.send_text(json.dumps({'event': SocketEvent.open, '_id': g_user_id}))

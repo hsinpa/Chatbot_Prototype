@@ -4,17 +4,23 @@ from langgraph.constants import END
 from langgraph.graph import StateGraph
 
 from agent.GraphAgent import GraphAgent
+from agent.agent_utility import streaming_exec
 from agent.chatbot.chatbot_type import ChatbotAgentState
 from prompt.chatbot_prompt import GENERAL_CHATBOT_SYSTEM_PROMPT, GENERAL_HUMAN_PROMPT
+from router.chatbot_route_model import ChatbotStreamingInput
 from utility.utility_method import gpt_model, get_langfuse_callback
+from websocket.websocket_manager import WebSocketManager
 
 
 class ChatbotGraphAgent(GraphAgent):
-    def __init__(self, name: str, personality: str, background: str, goal: str):
+    def __init__(self, name: str, personality: str, background: str, goal: str,
+                 streaming_input: ChatbotStreamingInput, websocket: WebSocketManager):
         self._name = name
         self._personality = personality
         self._background = background
         self._goal = goal
+        self._streaming_input = streaming_input
+        self._websocket = websocket
 
     async def chat_chain(self, state: ChatbotAgentState):
         prompt_template = ChatPromptTemplate.from_messages([
@@ -33,8 +39,10 @@ class ChatbotGraphAgent(GraphAgent):
 
         chain = (prompt_template | gpt_model() | StrOutputParser())
 
-        result = await chain.ainvoke(variables)
-
+        stram_chain = chain.astream(variables)
+        result = await streaming_exec(websockets=self._websocket, session_id=self._streaming_input.session_id,
+                                      token=self._streaming_input.token,
+                                      stream=stram_chain)
         return {'final_message': result}
 
     def create_graph(self):

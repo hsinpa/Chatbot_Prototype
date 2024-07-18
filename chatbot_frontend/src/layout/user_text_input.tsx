@@ -1,12 +1,14 @@
-import { useEffect, useState } from "react"
+import { useContext, useEffect, useState } from "react"
 import { useMessageStore } from "../zusland/MessageStore";
 import { MessageInterface } from "../types/chatbot_type";
 import { v4 as uuidv4 } from 'uuid';
+import { wsContext } from "../App";
 
 export const User_Text_Input = function() {
     const push_message_callback = useMessageStore(s=>s.push_message);
     const [is_focus, set_focus] = useState(false);
     const [textarea_value, set_textarea] = useState('');
+    let websocket = useContext(wsContext);
 
     let set_textarea_height = function() {
         let lineBreaks = textarea_value.match(/\n/g);
@@ -28,15 +30,19 @@ export const User_Text_Input = function() {
             _id: uuidv4(), content: textarea_value, type:'user', version: 1
         }
 
-        fetch('http://localhost:8842/chatbot/chat_stream', {method:'post', headers:{"Content-Type": "application/json"}, body: JSON.stringify({
-            text: textarea_value,
-            session_id: 'hi',
-            token: '0'
-        })})
+        if (websocket != null) {
+            console.log(websocket.id)
+            fetch('http://localhost:8842/chatbot/chat_stream', 
+                {method:'post', headers:{"Content-Type": "application/json"}, 
+                body: JSON.stringify({
+                text: message.content,
+                session_id: websocket.id,
+                token: message._id
+            })});
+        }
+
         push_message_callback(message);
         set_textarea('');
-
-
     }
     
     let on_textarea_change = function(e: React.FormEvent<HTMLTextAreaElement>) {

@@ -19,4 +19,6 @@ class StreamingDataChunkType(BaseModel):
     session_id: str = Field(..., description='Session id, for websocket connection')
     token: str = Field(..., description='One time token to track individual request')
     data: str = Field(..., description='Actual chunk data')
+    bubble_id: str = Field(..., description="ID for individual message bubble")
+    index: int = Field(..., description="Order / Sequence")
     type: DataChunkType

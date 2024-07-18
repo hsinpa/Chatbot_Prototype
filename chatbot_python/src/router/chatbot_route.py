@@ -4,11 +4,11 @@ from fastapi import APIRouter, BackgroundTasks
 
 from agent.ChatbotManager import ChatbotManager
 from router.chatbot_route_model import ChatbotInput
-from websocket.websocket_manager import websocket_manager
+from websocket.websocket_manager import get_websocket
 
 router = APIRouter(prefix="/chatbot", tags=["chatbot"])
 
-chatbot_manager = ChatbotManager(websockets=websocket_manager)
+chatbot_manager = ChatbotManager(websockets=get_websocket())
 
 @router.post("/chat")
 async def chat(c_input: ChatbotInput):
