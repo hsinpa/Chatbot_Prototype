@@ -27,7 +27,6 @@ export class WebsocketManager extends EventSystem {
         // });
         
         this._socket.addEventListener("message", (event) => {
-            console.log("Message from server ", event.data);
 
             try {
                 let json = JSON.parse(event.data);
@@ -36,6 +35,8 @@ export class WebsocketManager extends EventSystem {
 
                 if ('_id' in json) 
                     this._id = json['_id']
+
+                // console.log("Message from server ", event.data);
 
                 this.Notify('websocket', json);
             } catch {

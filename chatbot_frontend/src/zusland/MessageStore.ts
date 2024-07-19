@@ -43,7 +43,8 @@ export const useMessageStore = create<MessageStoreState>()(
 
         update_message(message: MessageInterface) {
             set(state => {
-                state.message_map.set(message._id, message);
+                state.message_array = [...state.message_array]
+                state.message_map.set(message._id, {...message});
             });
         }
     })),
