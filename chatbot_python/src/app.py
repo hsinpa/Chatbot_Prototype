@@ -5,13 +5,13 @@ import uuid
 from dotenv import load_dotenv
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect, Depends
 from fastapi.middleware.cors import CORSMiddleware
+
+from database.db_init import create_init_table
 from src.router.chatbot_route import router as chatbot_router
 from websocket.socket_static import SocketEvent
 from websocket.websocket_manager import get_websocket
 
 load_dotenv()
-
-
 
 app = FastAPI(openapi_url="/docs/openapi.json", docs_url="/docs")
 app.include_router(chatbot_router)
@@ -30,6 +30,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+create_init_table()
 
 @app.get("/")
 async def root():

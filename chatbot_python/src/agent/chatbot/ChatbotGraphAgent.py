@@ -8,6 +8,7 @@ from agent.agent_utility import streaming_exec
 from agent.chatbot.chatbot_type import ChatbotAgentState
 from prompt.chatbot_prompt import GENERAL_CHATBOT_SYSTEM_PROMPT, GENERAL_HUMAN_PROMPT
 from router.chatbot_route_model import ChatbotStreamingInput
+from utility.static_text import OpenAI_Model_4o_mini, OpenAI_Model_3_5
 from utility.utility_method import gpt_model, get_langfuse_callback
 from websocket.websocket_manager import WebSocketManager
 
@@ -37,7 +38,7 @@ class ChatbotGraphAgent(GraphAgent):
             'query': state['query']
         }
 
-        chain = (prompt_template | gpt_model() | StrOutputParser())
+        chain = (prompt_template | gpt_model(model_name=OpenAI_Model_4o_mini) | StrOutputParser())
 
         stram_chain = chain.astream(variables)
         result = await streaming_exec(websockets=self._websocket, session_id=self._streaming_input.session_id,

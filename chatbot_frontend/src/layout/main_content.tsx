@@ -53,8 +53,6 @@ export const MainContentView = function() {
                     current_message_struct.content += data_chunk;
                     current_message_struct.version = index;
 
-                    console.log(current_message_struct.content);
-
                     update_message_func(current_message_struct);
                 }
             }

@@ -24,7 +24,6 @@ class EventSystem {
 
     Notify(event_id : string, parameters? : any) {
         if (this._events.hasOwnProperty(event_id) && this._events[event_id] != null) {
-            console.log('Notify event_id ' + event_id)
             this._events[event_id](event_id, parameters)
         }  
     }

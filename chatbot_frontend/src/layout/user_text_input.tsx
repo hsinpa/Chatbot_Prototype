@@ -1,13 +1,21 @@
-import { useContext, useEffect, useState } from "react"
+import { useCallback, useContext, useEffect, useState } from "react"
 import { useMessageStore } from "../zusland/MessageStore";
 import { MessageInterface } from "../types/chatbot_type";
 import { v4 as uuidv4 } from 'uuid';
 import { wsContext } from "../App";
+import { KeyboardEventCode } from "../utility/static_text";
+
+type KeyValuePairType = {
+    [key: string]: number;
+};
+
+let keyboad_pair_tables: KeyValuePairType = {};
 
 export const User_Text_Input = function() {
     const push_message_callback = useMessageStore(s=>s.push_message);
     const [is_focus, set_focus] = useState(false);
     const [textarea_value, set_textarea] = useState('');
+
     let websocket = useContext(wsContext);
 
     let set_textarea_height = function() {
@@ -49,8 +57,31 @@ export const User_Text_Input = function() {
         set_textarea(e.currentTarget.value);
     }
 
+    const on_keyboard_down = function (event: KeyboardEvent) {
+        keyboad_pair_tables[event.key] = 1
+
+        if (event.key == KeyboardEventCode.Enter && !(KeyboardEventCode.Shift in keyboad_pair_tables)) {
+            event.preventDefault();
+            fire_submit_event();
+        }
+    }
+
+    const on_keyboard_up = function (event: KeyboardEvent) {
+        if (event.key in keyboad_pair_tables) {
+            delete keyboad_pair_tables[event.key];
+        }
+    }
+
     useEffect(() => {
         set_textarea_height();
+
+        window.addEventListener("keydown", on_keyboard_down);
+        window.addEventListener("keyup", on_keyboard_up);
+
+        return () => {
+            window.removeEventListener("keydown", on_keyboard_down);
+            window.removeEventListener("keyup", on_keyboard_up);    
+        }  
     }, [textarea_value]);
 
     return (

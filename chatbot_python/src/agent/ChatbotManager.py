@@ -33,5 +33,3 @@ class ChatbotManager:
     async def achat_stream(self, c_input: ChatbotInput):
         chat_graph = self.get_chat_graph(c_input)
         return await chat_graph.ainvoke({'query': c_input.text})
-
-        # return await streaming_exec(websockets=self._websockets, session_id=c_input.session_id, stream=stream_graph)

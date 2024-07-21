@@ -107,6 +107,7 @@ multidict==6.0.5
     # via yarl
 numpy==1.26.4
     # via langchain
+    # via pgvector
 openai==1.35.13
     # via langchain-openai
 orjson==3.10.6
@@ -114,6 +115,12 @@ orjson==3.10.6
 packaging==23.2
     # via langchain-core
     # via langfuse
+pgvector==0.3.2
+    # via chatbot-python
+psycopg==3.2.1
+    # via chatbot-python
+psycopg-binary==3.2.1
+    # via psycopg
 pydantic==2.8.2
     # via fastapi
     # via langchain
@@ -164,10 +171,13 @@ typer==0.12.3
 typing-extensions==4.12.2
     # via fastapi
     # via openai
+    # via psycopg
     # via pydantic
     # via pydantic-core
     # via sqlalchemy
     # via typer
+tzdata==2024.1
+    # via psycopg
 urllib3==2.2.2
     # via requests
 uvicorn==0.30.1
