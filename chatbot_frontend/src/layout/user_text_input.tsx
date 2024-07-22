@@ -44,6 +44,7 @@ export const User_Text_Input = function() {
                 {method:'post', headers:{"Content-Type": "application/json"}, 
                 body: JSON.stringify({
                 text: message.content,
+                user_id: 'hsinpa@gmail.com',
                 session_id: websocket.id,
                 token: message._id
             })});

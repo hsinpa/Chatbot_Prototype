@@ -32,14 +32,13 @@ async def streaming_exec(websockets: WebSocketManager, session_id: str, token: s
         results = results + data_chunk
         index += 1
 
-
     full_stream_data = StreamingDataChunkType(session_id=session_id,
-                                         data=results,
-                                         token=token,
-                                         bubble_id=bubble_id,
-                                         index=index,
-                                         time=datetime.now(timezone.utc).timestamp(),
-                                         type=DataChunkType.Complete)
+                                              data=results,
+                                              token=token,
+                                              bubble_id=bubble_id,
+                                              index=index,
+                                              time=datetime.now(timezone.utc).timestamp(),
+                                              type=DataChunkType.Complete)
 
     full_stream_data.type = DataChunkType.Complete
     full_stream_data.data = results
