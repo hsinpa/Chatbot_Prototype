@@ -32,4 +32,8 @@ class ChatbotManager:
 
     async def achat_stream(self, c_input: ChatbotInput):
         chat_graph = self.get_chat_graph(c_input)
-        return await chat_graph.ainvoke({'query': c_input.text})
+        result =  await chat_graph.ainvoke({'query': c_input.text})
+
+        print(result)
+
+        return result

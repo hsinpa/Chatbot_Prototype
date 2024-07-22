@@ -34,7 +34,7 @@ CREATE INDEX chatbot_message_index ON chatbot_messages (session_id);
 
 CREATE TABLE IF NOT EXISTS chatroom_summary (
     id INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-    chatroom_id varchar(256),
+    chatroom_id int,
     session_id varchar(256),
     user_id text,
     summary text,

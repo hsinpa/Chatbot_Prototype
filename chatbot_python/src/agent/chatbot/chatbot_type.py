@@ -1,13 +1,8 @@
+from datetime import datetime
 from enum import Enum
 from typing import TypedDict, Annotated
 
 from pydantic import BaseModel, Field
-
-
-class ChatbotAgentState(TypedDict):
-    final_message: Annotated[str, lambda x, y: y]
-    query: str
-    intention: str
 
 
 class DataChunkType(str, Enum):
@@ -21,4 +16,11 @@ class StreamingDataChunkType(BaseModel):
     data: str = Field(..., description='Actual chunk data')
     bubble_id: str = Field(..., description="ID for individual message bubble")
     index: int = Field(..., description="Order / Sequence")
+    time: float = Field(..., description='UTC timestamp')
     type: DataChunkType
+
+
+class ChatbotAgentState(TypedDict):
+    final_message: Annotated[StreamingDataChunkType, lambda x, y: y]
+    query: str
+    intention: str
