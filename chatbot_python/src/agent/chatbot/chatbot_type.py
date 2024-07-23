@@ -24,3 +24,5 @@ class ChatbotAgentState(TypedDict):
     final_message: Annotated[StreamingDataChunkType, lambda x, y: y]
     query: str
     intention: str
+    chatbot_id: str
+    chatroom_id: int

@@ -15,13 +15,18 @@ from websocket.websocket_manager import WebSocketManager
 
 class ChatbotGraphAgent(GraphAgent):
     def __init__(self, name: str, personality: str, background: str, goal: str,
-                 streaming_input: ChatbotStreamingInput, websocket: WebSocketManager):
+                 chatroom_id:int, streaming_input: ChatbotStreamingInput, websocket: WebSocketManager):
         self._name = name
+        self.chatroom_id = chatroom_id
         self._personality = personality
         self._background = background
         self._goal = goal
         self._streaming_input = streaming_input
         self._websocket = websocket
+
+    async def prepare_chatbot_config(self, state: ChatbotAgentState):
+
+        pass
 
     async def chat_chain(self, state: ChatbotAgentState):
         prompt_template = ChatPromptTemplate.from_messages([

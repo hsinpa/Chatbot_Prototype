@@ -3,7 +3,8 @@ import uuid
 
 from psycopg.rows import dict_row
 import psycopg
-from database.bot_chat_sql import BOT_NAME, BOT_PERSONALITY, BOT_INSTRUCTION, BOT_BACKGROUND, BOT_TYPE
+from database.bot_chat_sql import BOT_NAME, BOT_PERSONALITY, BOT_INSTRUCTION, BOT_BACKGROUND, BOT_TYPE, SCENARIO_NAME, \
+    SCENARIO_BACKGROUND
 from database.bot_narrator_sql import NARRATOR_NAME, NARRATOR_PERSONALITY, NARRATOR_INSTRUCTION, NARRATOR_BACKGROUND, \
     NARRATOR_TYPE
 
@@ -35,8 +36,8 @@ class PostgresDB_Chat():
                 cur.execute(f"""SELECT COUNT(id) as c FROM bot WHERE name='{BOT_NAME}'""")
                 bot_fetch = cur.fetchone()
 
-                cur.execute(f"""SELECT COUNT(id) as c FROM chatroom WHERE session_id='{session_id}'""")
-                chatroom_fetch = cur.fetchone()
+                cur.execute(f"""SELECT COUNT(id) as c FROM room_scenario WHERE id=1""")
+                room_scenario_fetch = cur.fetchone()
 
                 chatbot_id = str(uuid.uuid4())
                 narrator_id = str(uuid.uuid4())
@@ -53,9 +54,9 @@ class PostgresDB_Chat():
                                 (narrator_id, BOT_NAME, BOT_PERSONALITY, BOT_INSTRUCTION,
                                  BOT_BACKGROUND, BOT_TYPE))
 
-                if chatroom_fetch['c'] == 0:
-                    cur.execute(f"""INSERT INTO chatroom(chatbot_id, narrator_id, session_id, user_id)
+                if room_scenario_fetch['c'] == 0:
+                    cur.execute(f"""INSERT INTO room_scenario(chatbot_id, narrator_id, scenario_name, background)
                                     VALUES(%s, %s, %s, %s)""",
-                                ([chatbot_id], narrator_id, session_id, user_id))
+                                ([chatbot_id], narrator_id, SCENARIO_NAME, SCENARIO_BACKGROUND))
 
                 conn.commit()

@@ -17,13 +17,12 @@ class ChatbotManager:
         self._websockets = websockets
         self.chatbot_message_db = ChatbotMessagesDB()
 
-
     def get_chat_graph(self, c_input: ChatbotInput):
         chat_agent = ChatbotGraphAgent(name='Honey', personality='naughty', goal='teach fruit knowledge',
                                        background='Once a school teacher, now out of job',
                                        streaming_input=ChatbotStreamingInput(session_id=c_input.session_id,
                                                                              token=c_input.token),
-                                       websocket=self._websockets
+                                       websocket=self._websockets, chatroom_id=1
                                        )
 
         chat_graph = chat_agent.create_graph()
@@ -60,6 +59,6 @@ class ChatbotManager:
                 ),
             ]
 
-            )
+        )
 
         return result
