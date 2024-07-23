@@ -10,11 +10,10 @@ class ChatbotUserEnum(str, Enum):
     narrator = 'narrator'
 
 
-class ChatMessageDBType(BaseModel):
+class ChatMessageDBInputType(BaseModel):
     body: str
     user_id: str
-    user_type: ChatbotUserEnum
-    session_id: str
+    message_type: ChatbotUserEnum
     bubble_id: str
     chatroom_id: int
-    created_date: Optional[datetime.datetime]
+    created_date: Optional[datetime.datetime] = None
