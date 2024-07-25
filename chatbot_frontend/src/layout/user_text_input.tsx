@@ -75,6 +75,9 @@ export const User_Text_Input = function() {
 
     useEffect(() => {
         set_textarea_height();
+        let user_textarea_dom = document.querySelector<HTMLTextAreaElement>('.user_input_textarea textarea');
+        if (user_textarea_dom != null) user_textarea_dom.focus();
+
 
         window.addEventListener("keydown", on_keyboard_down);
         window.addEventListener("keyup", on_keyboard_up);

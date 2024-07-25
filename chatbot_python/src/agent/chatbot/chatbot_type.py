@@ -26,3 +26,8 @@ class ChatbotAgentState(TypedDict):
     intention: str
     chatbot_id: str
     chatroom_id: int
+    new_chatroom_summary: str
+
+class General_Bullet_Point_Type(BaseModel):
+    thought: str = Field(..., description='Why and what you think is important in the given context')
+    points: list[str] = Field(..., description='A array of important point, highly worth mentioning')

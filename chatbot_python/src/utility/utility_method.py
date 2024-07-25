@@ -4,7 +4,7 @@ import re
 from langchain_openai import ChatOpenAI
 from langfuse.callback import CallbackHandler
 
-from utility.static_text import OpenAI_Model_4o_mini
+from utility.llm_static import OpenAI_Model_4o_mini
 
 
 def gpt_model(model_name: str = OpenAI_Model_4o_mini, temperature=0.7, json_response=False):
@@ -18,6 +18,7 @@ def gpt_model(model_name: str = OpenAI_Model_4o_mini, temperature=0.7, json_resp
 def get_langfuse_callback():
     return CallbackHandler(
         user_id=os.environ['LANGFUSE_USER'])
+
 
 def parse_block(code: str, raw_message: str) -> str | None:
     regex_sympy = r'```{code}(?:.|\n)*?```'

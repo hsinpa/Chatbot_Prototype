@@ -24,9 +24,6 @@ class PostgresDB_Chat():
     def create_init_table(self):
         conn_str = get_conn_uri()
 
-        session_id = 'demoroom_session'
-        user_id = 'hsinpa@gmail.com'
-
         with psycopg.connect(conn_str, row_factory=dict_row) as conn:
             with conn.cursor() as cur:
                 # Execute a command: this creates a new table
@@ -38,6 +35,8 @@ class PostgresDB_Chat():
 
                 cur.execute(f"""SELECT COUNT(id) as c FROM room_scenario WHERE id=1""")
                 room_scenario_fetch = cur.fetchone()
+
+                print('room_scenario_fetch', room_scenario_fetch)
 
                 chatbot_id = str(uuid.uuid4())
                 narrator_id = str(uuid.uuid4())

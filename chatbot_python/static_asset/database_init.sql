@@ -22,6 +22,7 @@ CREATE TABLE IF NOT EXISTS chatroom (
     session_id varchar(255),
     scenario_id int,
     user_id text,
+    summary text NOT NULL DEFAULT '',
     created_date DATE NOT NULL DEFAULT CURRENT_DATE,
     FOREIGN KEY(scenario_id) REFERENCES room_scenario(id)
 );
@@ -37,14 +38,3 @@ CREATE TABLE IF NOT EXISTS chatbot_messages (
     created_date DATE NOT NULL DEFAULT CURRENT_DATE,
     FOREIGN KEY(chatroom_id) REFERENCES chatroom(id)
 );
-
-CREATE TABLE IF NOT EXISTS chatroom_summary (
-    id INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-    chatroom_id int,
-    session_id varchar(255),
-    user_id text,
-    summary text,
-    updated_date DATE NOT NULL DEFAULT CURRENT_DATE,
-    FOREIGN KEY(chatroom_id) REFERENCES chatroom(id)
-);
-CREATE INDEX chatbot_summary_index ON chatroom_summary (session_id);
