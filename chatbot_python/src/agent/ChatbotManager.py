@@ -1,5 +1,6 @@
 import uuid
 
+from agent.MemoryManager import MemoryManager
 from agent.agent_utility import streaming_exec
 from agent.chatbot.ChatbotGraphAgent import ChatbotGraphAgent
 from agent.chatbot.chatbot_type import StreamingDataChunkType, DataChunkType
@@ -15,7 +16,8 @@ from websocket.websocket_manager import WebSocketManager
 
 class ChatbotManager:
 
-    def __init__(self, websockets: WebSocketManager):
+    def __init__(self, memory_manager: MemoryManager,  websockets: WebSocketManager):
+        self._memory = memory_manager
         self._websockets = websockets
         self.chatbot_message_db = ChatbotMessagesDB()
         self.chatroom_db = ChatRoomDB()
@@ -56,10 +58,7 @@ class ChatbotManager:
 
         messages = self._save_message_to_db(c_input, chatroom_db_type, bot_message)
         self.chatbot_message_db.update_summary(chatroom_db_type.id, result['new_chatroom_summary'])
-
-        memory_agent = MemoryGraphAgent(chatroom_id=chatroom_db_type.id, messages=messages)
-        memory_graph = memory_agent.create_graph().with_config({'callbacks': [get_langfuse_callback()]})
-        await memory_graph.ainvoke({'messages': messages})
+        self._memory.queue_message(scenario_db_type, chatroom_db_type, messages)
 
         return result
 

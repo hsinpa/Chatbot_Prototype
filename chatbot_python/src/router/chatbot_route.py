@@ -4,6 +4,7 @@ from fastapi import APIRouter, BackgroundTasks
 from langchain_core.output_parsers import StrOutputParser, PydanticToolsParser
 
 from agent.ChatbotManager import ChatbotManager
+from agent.MemoryManager import MemoryManager
 from agent.tools.weather_tool import weather_tool, WeatherToolType, WeatherOutputParser
 from router.chatbot_route_model import ChatbotInput
 from utility.simple_prompt_factory import SimplePromptFactory
@@ -11,7 +12,8 @@ from websocket.websocket_manager import get_websocket
 
 router = APIRouter(prefix="/chatbot", tags=["chatbot"])
 
-chatbot_manager = ChatbotManager(websockets=get_websocket())
+memory_manager = MemoryManager()
+chatbot_manager = ChatbotManager(memory_manager=memory_manager, websockets=get_websocket())
 
 
 @router.post("/chat")

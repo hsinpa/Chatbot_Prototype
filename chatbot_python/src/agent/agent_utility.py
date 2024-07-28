@@ -3,10 +3,13 @@ import uuid
 from datetime import datetime, timezone
 from typing import AsyncIterator
 
+from langchain_core.messages import MessageLikeRepresentation
 from langchain_core.runnables import Runnable
 from langchain_core.runnables.utils import Output
 
 from agent.chatbot.chatbot_type import StreamingDataChunkType, DataChunkType
+from agent.memory.memory_type import ChatKnowledgeType, Category
+from model.chatbot_model import ChatMessageDBInputType, ChatbotUserEnum
 from websocket.socket_static import SocketEvent
 from websocket.websocket_manager import WebSocketManager
 
@@ -44,3 +47,38 @@ async def streaming_exec(websockets: WebSocketManager, session_id: str, token: s
     full_stream_data.data = results
 
     return full_stream_data
+
+
+def reform_db_message(messages: list[ChatMessageDBInputType]):
+    messages_output: list[MessageLikeRepresentation] = []
+
+    for m in messages:
+        messages_output.append(('human' if m.message_type != ChatbotUserEnum.human else 'ai', m.body))
+
+    return messages_output
+
+
+def db_message_to_str(messages: list[ChatMessageDBInputType]):
+    message_str = ''
+    for m in messages:
+        message_str += f'Message from {m.message_type.value}: \n{m.body}'
+
+    return message_str
+
+
+def db_memory_to_str(memories: list[ChatKnowledgeType]):
+
+    if memories is None or len(memories) <= 0:
+        return 'Empty'
+
+    knowledge_memo_str = 'Knowledge from user: \n'
+    item_memo_str = '\nItem hold by user: \n'
+
+    for m in memories:
+        if m.attribute.value == Category.Knowledge:
+            knowledge_memo_str += f'ID [{m.knowledge_id}]: {m.knowledge}\n'
+
+        if m.attribute.value == Category.Item:
+            item_memo_str += f'ID [{m.knowledge_id}]: {m.knowledge}\n'
+
+    return knowledge_memo_str + item_memo_str

@@ -1,7 +1,8 @@
 from enum import Enum
 from typing import TypedDict, Annotated, Optional
 
-from pydantic import BaseModel, Field
+from langchain_core.tools import tool
+from pydantic.v1 import BaseModel, Field
 
 from model.chatbot_model import ChatMessageDBInputType
 
@@ -17,14 +18,18 @@ class Action(str, Enum):
     Delete = "Delete"
 
 
-class ChatKnowledgeOpsType(BaseModel):
-    attribute: Category = Field(..., description='Category that this knowledge belongs to. Only knowledge and item exist')
-    knowledge: str = Field(...,
+class ChatKnowledgeType(BaseModel):
+    attribute: Category = Field(...,
+                                description='Category that this knowledge belongs to. Only knowledge and item exist')
+    knowledge: str = Field(..., alias='body',
                            description="""Condensed bit of knowledge to be saved for future reference in the format:
 [person(s) this is relevant to] [fact to store] (e.g. Husband doesn't like tuna; I am allergic to shellfish; etc)""", )
+    knowledge_id: Optional[int] = Field(..., alias='id', description="only use for update and delete operation")
+
+
+class ChatKnowledgeOpsType(ChatKnowledgeType):
     action: Action = Field(...,
                            description='Whether this knowledge is adding a new record, updating a record, or deleting a record')
-    id: Optional[str] = Field(..., description="only use for update and delete operation")
 
 
 class ChatNewKnowledgeType(BaseModel):
@@ -37,4 +42,10 @@ class ChatNewKnowledgeType(BaseModel):
 class ChatbotMemoryState(TypedDict):
     messages: Annotated[list[ChatMessageDBInputType], lambda x, y: y]
     new_knowledge: ChatNewKnowledgeType
-    operation_type: ChatKnowledgeOpsType
+    knowledge_ops: list[ChatKnowledgeOpsType]
+
+
+@tool(args_schema=ChatKnowledgeOpsType, return_direct=True)
+def knowledge_ops_facade_tool(attribute: Category, action: Action, knowledge: str, knowledge_id: Optional[int]) -> bool:
+    """A knowledge operation tool, that can create, update, delete data in a data structure"""
+    return True

@@ -1,5 +1,7 @@
 import os
 import uuid
+from enum import Enum
+from typing import Any
 
 from psycopg.rows import dict_row
 import psycopg
@@ -7,6 +9,13 @@ from database.bot_chat_sql import BOT_NAME, BOT_PERSONALITY, BOT_INSTRUCTION, BO
     SCENARIO_BACKGROUND
 from database.bot_narrator_sql import NARRATOR_NAME, NARRATOR_PERSONALITY, NARRATOR_INSTRUCTION, NARRATOR_BACKGROUND, \
     NARRATOR_TYPE
+
+
+class FetchType(Enum):
+    Idle = 0
+    One = 1
+    Many = 2
+
 
 def get_conn_uri():
     user_id = os.environ['POSTGRES_USER']
@@ -16,6 +25,24 @@ def get_conn_uri():
 
     conn_str = f"host={postgres_host} port=5432 dbname={postgres_db} user={user_id} password={password} connect_timeout=10"
     return conn_str
+
+
+async def async_db_ops(sql_syntax: str, fetch_type: FetchType = FetchType.Idle, parameters: list[Any] = None):
+    if parameters is None:
+        parameters = []
+
+    async with await psycopg.AsyncConnection.connect(get_conn_uri(), row_factory=dict_row) as aconn:
+        async with aconn.cursor() as acur:
+            await acur.execute(sql_syntax, parameters)
+
+            if fetch_type == FetchType.Many:
+                fetch_r = await acur.fetchmany()
+            if fetch_type == FetchType.One:
+                fetch_r = await acur.fetchone()
+
+            if fetch_type != FetchType.Idle:
+                return fetch_r
+
 
 class PostgresDB_Chat():
     def __init__(self):

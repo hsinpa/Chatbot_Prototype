@@ -38,3 +38,12 @@ CREATE TABLE IF NOT EXISTS chatbot_messages (
     created_date DATE NOT NULL DEFAULT CURRENT_DATE,
     FOREIGN KEY(chatroom_id) REFERENCES chatroom(id)
 );
+
+CREATE TABLE IF NOT EXISTS chatbot_memory (
+    id INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    body text,
+    attribute varchar(255),
+    session_id varchar(255),
+    created_date DATE NOT NULL DEFAULT CURRENT_DATE
+);
+CREATE INDEX memory_session_index ON chatbot_memory (session_id);

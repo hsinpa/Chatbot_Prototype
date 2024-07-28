@@ -1,5 +1,5 @@
 import json
-from typing import List, Any, Optional
+from typing import List, Any, Optional, Type
 
 from langchain_core.output_parsers import BaseOutputParser, JsonOutputToolsParser
 from langchain_core.outputs import Generation
@@ -21,6 +21,7 @@ def weather_tool(location: str, time: int) -> bool:
 
 class WeatherOutputParser(JsonOutputToolsParser):
     """Custom boolean parser."""
+    tools: List[Type[BaseModel]]
 
     def parse_result(self, result: List[Generation], *, partial: bool = False) -> Any:
         print(result)

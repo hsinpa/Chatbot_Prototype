@@ -1,4 +1,6 @@
+import asyncio
 import json
+import sys
 import uuid
 
 from dotenv import load_dotenv
@@ -11,6 +13,9 @@ from websocket.socket_static import SocketEvent
 from websocket.websocket_manager import get_websocket
 
 load_dotenv()
+
+if sys.platform == "win32":
+    asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
 
 postgresDB = PostgresDB_Chat()
 
