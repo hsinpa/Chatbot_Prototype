@@ -15,7 +15,6 @@ router = APIRouter(prefix="/chatbot", tags=["chatbot"])
 memory_manager = MemoryManager()
 chatbot_manager = ChatbotManager(memory_manager=memory_manager, websockets=get_websocket())
 
-
 @router.post("/chat")
 async def chat(c_input: ChatbotInput):
     return await chatbot_manager.achat(c_input)

@@ -20,6 +20,16 @@ class ChatMessageDBInputType(BaseModel):
     created_date: Optional[datetime.datetime] = None
 
 
+class ChatbotNPCDBType(BaseModel):
+    id: int
+    name: str
+    personality: str
+    instruction: str
+    background_story: str
+    type: ChatbotUserEnum
+    created_date: Optional[datetime.datetime] = None
+
+
 class ChatScenarioDBType(BaseModel):
     id: int
     chatbot_id: list[str]

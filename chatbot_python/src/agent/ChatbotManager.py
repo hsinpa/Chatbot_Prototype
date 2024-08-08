@@ -6,9 +6,11 @@ from agent.chatbot.ChatbotGraphAgent import ChatbotGraphAgent
 from agent.chatbot.chatbot_type import StreamingDataChunkType, DataChunkType
 from agent.memory.memory_agent import MemoryGraphAgent
 from database.chatbot_messages_db import ChatbotMessagesDB
+from database.chatbot_npc_db import ChatbotNpcDB
 from database.chatroom_db import ChatRoomDB
 from database.db_manager import PostgresDB_Chat
-from model.chatbot_model import ChatbotUserEnum, ChatMessageDBInputType, ChatScenarioDBType, ChatRoomDBType
+from model.chatbot_model import ChatbotUserEnum, ChatMessageDBInputType, ChatScenarioDBType, ChatRoomDBType, \
+    ChatbotNPCDBType
 from router.chatbot_route_model import ChatbotInput, ChatbotStreamingInput
 from utility.utility_method import get_langfuse_callback
 from websocket.websocket_manager import WebSocketManager
@@ -16,15 +18,21 @@ from websocket.websocket_manager import WebSocketManager
 
 class ChatbotManager:
 
-    def __init__(self, memory_manager: MemoryManager,  websockets: WebSocketManager):
+    def __init__(self, memory_manager: MemoryManager, websockets: WebSocketManager):
         self._memory = memory_manager
         self._websockets = websockets
         self.chatbot_message_db = ChatbotMessagesDB()
         self.chatroom_db = ChatRoomDB()
+        self.npc_db = ChatbotNpcDB()
 
-    def get_chat_graph(self, c_input: ChatbotInput, scenario_db_type: ChatScenarioDBType,
-                       chatroom_db_type: ChatRoomDBType):
-        chat_agent = ChatbotGraphAgent(name='Honey', personality='naughty', goal='teach fruit knowledge',
+    def get_chat_graph(self, c_input: ChatbotInput,
+                       scenario_db_type: ChatScenarioDBType,
+                       bots: list[ChatbotNPCDBType], chatroom_db_type: ChatRoomDBType):
+        narrator_bot = next((b for b in bots if b.type == ChatbotUserEnum.narrator.value), None)
+        chat_bot = next((b for b in bots if b.type == ChatbotUserEnum.bot.value), None)
+
+        chat_agent = ChatbotGraphAgent(narrator=narrator_bot, chatbot=chat_bot,
+            name='Honey', personality='naughty', goal='teach fruit knowledge',
                                        background='Once a school teacher, now out of job',
                                        chatroom_summary=chatroom_db_type.summary,
                                        streaming_input=ChatbotStreamingInput(session_id=c_input.session_id,
@@ -38,9 +46,7 @@ class ChatbotManager:
         return chat_graph
 
     async def achat(self, c_input: ChatbotInput):
-        chat_graph = self.get_chat_graph(c_input)
-        r = await chat_graph.ainvoke({'query': c_input.text})
-
+        r = await self.achat_stream(c_input)
         return r
 
     async def achat_stream(self, c_input: ChatbotInput):
@@ -50,7 +56,11 @@ class ChatbotManager:
                                                                             scenario_id=scenario_db_type.id,
                                                                             session_id=c_input.session_id)
 
-        chat_graph = self.get_chat_graph(c_input, scenario_db_type, chatroom_db_type)
+        all_chatbot_ids = scenario_db_type.chatbot_id.copy()
+        all_chatbot_ids.append(scenario_db_type.narrator_id)
+        all_chatbot_npc = await self.npc_db.get_bots(all_chatbot_ids)
+
+        chat_graph = self.get_chat_graph(c_input, scenario_db_type, all_chatbot_npc, chatroom_db_type)
 
         result = await chat_graph.ainvoke({'query': c_input.text})
 

@@ -6,6 +6,7 @@ from langgraph.graph import StateGraph
 from agent.GraphAgent import GraphAgent
 from agent.agent_utility import streaming_exec
 from agent.chatbot.chatbot_type import ChatbotAgentState
+from model.chatbot_model import ChatbotNPCDBType
 from prompt.chatbot_prompt import GENERAL_CHATBOT_SYSTEM_PROMPT, GENERAL_HUMAN_PROMPT, \
     GENERAL_CHATBOT_MESSAGE_MERGE_PROMPT
 from router.chatbot_route_model import ChatbotStreamingInput
@@ -16,13 +17,14 @@ from websocket.websocket_manager import WebSocketManager
 
 
 class ChatbotGraphAgent(GraphAgent):
-    def __init__(self, name: str, personality: str, background: str, goal: str, chatroom_summary: str,
+    def __init__(self, narrator: ChatbotNPCDBType, chatbot: ChatbotNPCDBType,
+                 chatroom_summary: str,
                  chatroom_id: int, streaming_input: ChatbotStreamingInput, websocket: WebSocketManager):
-        self._name = name
         self.chatroom_id = chatroom_id
-        self._personality = personality
-        self._background = background
-        self._goal = goal
+
+        self._narrator = narrator
+        self._chatbot = chatbot
+
         self._chatroom_summary = chatroom_summary
         self._streaming_input = streaming_input
         self._websocket = websocket
@@ -50,10 +52,10 @@ class ChatbotGraphAgent(GraphAgent):
         ])
 
         variables = {
-            'name': self._name,
-            'personality': self._personality,
-            'background': self._background,
-            'goal': self._goal,
+            'name': self._chatbot.name,
+            'personality': self._chatbot.personality,
+            'background': self._chatbot.background,
+            'goal': self._chatbot.instruction,
             'summary': self._chatroom_summary,
             'query': state['query']
         }
@@ -69,11 +71,11 @@ class ChatbotGraphAgent(GraphAgent):
     def create_graph(self):
         g_workflow = StateGraph(ChatbotAgentState)
 
-        g_workflow.add_node('real_work', self.chat_chain)
+        g_workflow.add_node('chatbot_talk', self.chat_chain)
         g_workflow.add_node('message_summary', self.summary_chatbot_message)
 
-        g_workflow.set_entry_point('real_work')
-        g_workflow.add_edge('real_work', 'message_summary')
+        g_workflow.set_entry_point('chatbot_talk')
+        g_workflow.add_edge('chatbot_talk', 'message_summary')
         g_workflow.add_edge('message_summary', END)
 
         g_compile = g_workflow.compile()

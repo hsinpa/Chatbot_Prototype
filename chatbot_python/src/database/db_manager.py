@@ -36,7 +36,7 @@ async def async_db_ops(sql_syntax: str, fetch_type: FetchType = FetchType.Idle, 
             await acur.execute(sql_syntax, parameters)
 
             if fetch_type == FetchType.Many:
-                fetch_r = await acur.fetchmany()
+                fetch_r = await acur.fetchall()
             if fetch_type == FetchType.One:
                 fetch_r = await acur.fetchone()
 
@@ -71,13 +71,13 @@ class PostgresDB_Chat():
                 if narrator_fetch['c'] == 0:
                     cur.execute(f"""INSERT INTO bot(id, name, personality, instruction, background_story, type)
                                     VALUES(%s, %s, %s, %s, %s, %s)""",
-                                (chatbot_id, NARRATOR_NAME, NARRATOR_PERSONALITY, NARRATOR_INSTRUCTION,
+                                (narrator_id, NARRATOR_NAME, NARRATOR_PERSONALITY, NARRATOR_INSTRUCTION,
                                  NARRATOR_BACKGROUND, NARRATOR_TYPE))
 
                 if bot_fetch['c'] == 0:
                     cur.execute(f"""INSERT INTO bot(id, name, personality, instruction, background_story, type)
                                     VALUES(%s, %s, %s, %s, %s, %s)""",
-                                (narrator_id, BOT_NAME, BOT_PERSONALITY, BOT_INSTRUCTION,
+                                (chatbot_id, BOT_NAME, BOT_PERSONALITY, BOT_INSTRUCTION,
                                  BOT_BACKGROUND, BOT_TYPE))
 
                 if room_scenario_fetch['c'] == 0:

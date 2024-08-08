@@ -31,6 +31,7 @@ Finally, with all the given information and bot setting, start the conversation
 
 GENERAL_CHATBOT_MESSAGE_MERGE_PROMPT = """\
 Your task is to track past summary, and merge current messages into it, to form a new summary, the next round's summarization.
+It is encourage to emphasize more on summarizing human responses than Conversation AI.
 The past summary might be empty.
 
 [Past summary]
@@ -41,14 +42,14 @@ The past summary might be empty.
 [Current messages]
 Format on current messages
 user => input coming from human user
-ai => message spawn by large language model
-they are separate by ; character
+ai => message spawn by conversation AI
+they are separate by ;
 '''
 user => {user_message}
 ai => {ai_message}
 '''
 
-Use your own word, to summarize both [Past summary] and [Current messages] into one paragraph.
+Use your own word, to summarize both [Past summary] and [Current messages] into one short paragraph.
 
 Make sure the logic is fluent. Keep the length concise and short.
 

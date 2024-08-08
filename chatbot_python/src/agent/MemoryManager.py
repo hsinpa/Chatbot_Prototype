@@ -57,4 +57,6 @@ class MemoryManager:
             "run_name": 'Memory Ops', 'callbacks': [get_langfuse_callback()]})
 
         knowledge_types = await memory_graph.ainvoke({'messages': q_message})
-        await self._process_memory_db(chatroom_info.session_id, knowledge_types['knowledge_ops'])
+
+        if 'knowledge_ops' in knowledge_types:
+            await self._process_memory_db(chatroom_info.session_id, knowledge_types['knowledge_ops'])
