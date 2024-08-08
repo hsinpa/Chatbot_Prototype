@@ -4,6 +4,7 @@ import { MessageInterface } from "../types/chatbot_type";
 import { v4 as uuidv4 } from 'uuid';
 import { wsContext } from "../App";
 import { KeyboardEventCode } from "../utility/static_text";
+import { Clamp } from "../utility/utility_func";
 
 type KeyValuePairType = {
     [key: string]: number;
