@@ -21,7 +21,7 @@ class ChatMessageDBInputType(BaseModel):
 
 
 class ChatbotNPCDBType(BaseModel):
-    id: int
+    id: str
     name: str
     personality: str
     instruction: str

@@ -32,8 +32,6 @@ class ChatbotManager:
         chat_bot = next((b for b in bots if b.type == ChatbotUserEnum.bot.value), None)
 
         chat_agent = ChatbotGraphAgent(narrator=narrator_bot, chatbot=chat_bot,
-            name='Honey', personality='naughty', goal='teach fruit knowledge',
-                                       background='Once a school teacher, now out of job',
                                        chatroom_summary=chatroom_db_type.summary,
                                        streaming_input=ChatbotStreamingInput(session_id=c_input.session_id,
                                                                              token=c_input.token),

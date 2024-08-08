@@ -54,7 +54,7 @@ class ChatbotGraphAgent(GraphAgent):
         variables = {
             'name': self._chatbot.name,
             'personality': self._chatbot.personality,
-            'background': self._chatbot.background,
+            'background': self._chatbot.background_story,
             'goal': self._chatbot.instruction,
             'summary': self._chatroom_summary,
             'query': state['query']

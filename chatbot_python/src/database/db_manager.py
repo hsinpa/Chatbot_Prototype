@@ -1,4 +1,6 @@
+import asyncio
 import os
+import sys
 import uuid
 from enum import Enum
 from typing import Any
@@ -27,9 +29,28 @@ def get_conn_uri():
     return conn_str
 
 
+def sync_db_ops(sql_syntax: str, fetch_type: FetchType = FetchType.Idle, parameters: list[Any] = None):
+    if parameters is None:
+        parameters = []
+
+    with psycopg.connect(get_conn_uri(), row_factory=dict_row) as aconn:
+        with aconn.cursor() as acur:
+            acur.execute(sql_syntax, parameters)
+
+            if fetch_type == FetchType.Many:
+                fetch_r = acur.fetchall()
+            if fetch_type == FetchType.One:
+                fetch_r = acur.fetchone()
+
+            if fetch_type != FetchType.Idle:
+                return fetch_r
+
+
 async def async_db_ops(sql_syntax: str, fetch_type: FetchType = FetchType.Idle, parameters: list[Any] = None):
     if parameters is None:
         parameters = []
+
+    print(asyncio.get_event_loop_policy())
 
     async with await psycopg.AsyncConnection.connect(get_conn_uri(), row_factory=dict_row) as aconn:
         async with aconn.cursor() as acur:
