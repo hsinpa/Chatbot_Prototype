@@ -6,9 +6,9 @@ from langgraph.graph import StateGraph
 from agent.GraphAgent import GraphAgent
 from agent.agent_utility import streaming_exec
 from agent.chatbot.chatbot_type import ChatbotAgentState
-from model.chatbot_model import ChatbotNPCDBType
+from model.chatbot_model import ChatbotNPCDBType, ChatbotUserEnum
 from prompt.chatbot_prompt import GENERAL_CHATBOT_SYSTEM_PROMPT, GENERAL_HUMAN_PROMPT, \
-    GENERAL_CHATBOT_MESSAGE_MERGE_PROMPT
+    GENERAL_CHATBOT_MESSAGE_MERGE_PROMPT, GENERAL_NARRATOR_SYSTEM_PROMPT
 from router.chatbot_route_model import ChatbotStreamingInput
 from utility.llm_static import OpenAI_Model_4o_mini
 from utility.simple_prompt_factory import SimplePromptFactory
@@ -29,6 +29,27 @@ class ChatbotGraphAgent(GraphAgent):
         self._streaming_input = streaming_input
         self._websocket = websocket
 
+    def bot_variable(self, chatbot: ChatbotNPCDBType):
+        return {
+            'name': self._chatbot.name,
+            'personality': self._chatbot.personality,
+            'background': self._chatbot.background_story,
+            'goal': self._chatbot.instruction,
+            'summary': self._chatroom_summary,
+        }
+
+
+    def scenario_planning(self, state: ChatbotAgentState):
+        return {'query': state['query']}
+
+    def conditional_planning(self, state: ChatbotAgentState):
+        start_sentence = state['query'][:7]
+        print('start_sentence', start_sentence)
+        if start_sentence == 'action:':
+            return 'narrator_talk'
+        else:
+            return 'chatbot_talk'
+
     async def summary_chatbot_message(self, state: ChatbotAgentState):
         summary_factory = SimplePromptFactory(trace_name='Message Summary', trace_langfuse=False)
 
@@ -45,6 +66,25 @@ class ChatbotGraphAgent(GraphAgent):
         summary_str = await summary_chain.ainvoke({})
         return {'new_chatroom_summary': summary_str}
 
+    async def narrator_chain(self, state: ChatbotAgentState):
+        prompt_template = ChatPromptTemplate.from_messages([
+            ("system", GENERAL_NARRATOR_SYSTEM_PROMPT),
+            ("user", GENERAL_HUMAN_PROMPT),
+        ])
+
+        variables = {
+            **self.bot_variable(self._narrator),
+            'query': state['query']
+        }
+
+        chain = (prompt_template | gpt_model(model_name=OpenAI_Model_4o_mini) | StrOutputParser())
+
+        stram_chain = chain.astream(variables)
+        result = await streaming_exec(websockets=self._websocket, session_id=self._streaming_input.session_id,
+                                      token=self._streaming_input.token,
+                                      stream=stram_chain)
+        return {'final_message': result}
+
     async def chat_chain(self, state: ChatbotAgentState):
         prompt_template = ChatPromptTemplate.from_messages([
             ("system", GENERAL_CHATBOT_SYSTEM_PROMPT),
@@ -52,11 +92,7 @@ class ChatbotGraphAgent(GraphAgent):
         ])
 
         variables = {
-            'name': self._chatbot.name,
-            'personality': self._chatbot.personality,
-            'background': self._chatbot.background_story,
-            'goal': self._chatbot.instruction,
-            'summary': self._chatroom_summary,
+            **self.bot_variable(self._chatbot),
             'query': state['query']
         }
 
@@ -71,10 +107,18 @@ class ChatbotGraphAgent(GraphAgent):
     def create_graph(self):
         g_workflow = StateGraph(ChatbotAgentState)
 
+        g_workflow.add_node('scenario_planning', self.scenario_planning)
+
         g_workflow.add_node('chatbot_talk', self.chat_chain)
+        g_workflow.add_node('narrator_talk', self.narrator_chain)
+
         g_workflow.add_node('message_summary', self.summary_chatbot_message)
 
-        g_workflow.set_entry_point('chatbot_talk')
+        g_workflow.set_entry_point('scenario_planning')
+
+        g_workflow.add_conditional_edges('scenario_planning', self.conditional_planning)
+
+        g_workflow.add_edge('narrator_talk', 'chatbot_talk')
         g_workflow.add_edge('chatbot_talk', 'message_summary')
         g_workflow.add_edge('message_summary', END)
 
