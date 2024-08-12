@@ -5,6 +5,7 @@ import { MessageInterface } from "../types/chatbot_type";
 import { useMessageStore } from "../zusland/MessageStore";
 import { wsContext } from "../App";
 import { Clamp } from "../utility/utility_func";
+import { NarratorBubbleComp } from "../components/NarratorBubble";
 
 
 export const cal_container_height = function(force: boolean = false) {
@@ -37,11 +38,15 @@ export const cal_container_height = function(force: boolean = false) {
 const RenderBubbleComp = memo(function({comp}: {comp : MessageInterface | undefined}) {
     if (comp == undefined) return <></>
 
-    if (comp.type == 'ai')   {
+    if (comp.type == 'bot')   {
         return <BotInputBubbleComp content={comp.content}></BotInputBubbleComp>
     }
 
-    if (comp.type == 'user') {
+    if (comp.type == 'narrator')   {
+        return <NarratorBubbleComp content={comp.content}></NarratorBubbleComp>
+    }
+
+    if (comp.type == 'human') {
         return <UserInputBubbleComp content={comp.content}></UserInputBubbleComp>
     }
 }, arePropsEqual);
@@ -64,18 +69,18 @@ export const MainContentView = function() {
     const on_socket_message = function(event_id: string, json_data: any) {
         // try {
             if (json_data['event'] == 'bot') {
+                console.log(json_data);
                 let bubble_id = json_data['bubble_id'];
                 let index = json_data['index'];
                 let data_chunk = json_data['data'];
-
                 let current_message_struct = get_message_func(bubble_id);
-
+                
                 // Push
                 if (current_message_struct == null) {
                     push_message_func({
                         _id: bubble_id, 
                         content: data_chunk,
-                        type: 'ai',
+                        type: json_data['identity'],
                         version: index
                     })
                 } else {
@@ -109,7 +114,7 @@ export const MainContentView = function() {
 
     return (
         <main className="bg-white flex-1 overflow-y-scroll">
-            <div className="message_container px-4 py-2">
+            <div className="message_container px-4 py-2 flex flex-col gap-2">
                 {
                     message_id_array.map(x => {
                         return <RenderBubbleComp key={x} comp={get_message_func(x)}></RenderBubbleComp>;

@@ -1,6 +1,8 @@
+ 
+
 export interface MessageInterface {
     _id: string,
     content: string,
-    type: 'user' | 'ai' | 'system',
+    type: 'bot' | 'human' | 'narrator',
     version: number
 }

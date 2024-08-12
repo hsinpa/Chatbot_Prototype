@@ -4,6 +4,8 @@ from typing import TypedDict, Annotated
 
 from pydantic import BaseModel, Field
 
+from model.chatbot_model import ChatbotUserEnum
+
 
 class DataChunkType(str, Enum):
     Chunk = 'chunk'
@@ -17,6 +19,7 @@ class StreamingDataChunkType(BaseModel):
     bubble_id: str = Field(..., description="ID for individual message bubble")
     index: int = Field(..., description="Order / Sequence")
     time: float = Field(..., description='UTC timestamp')
+    identity: ChatbotUserEnum = Field(..., description='User Identity of this streaming message')
     type: DataChunkType
 
 

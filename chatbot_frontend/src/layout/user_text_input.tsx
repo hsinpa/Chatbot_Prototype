@@ -36,7 +36,7 @@ export const User_Text_Input = function() {
         console.log(textarea_value);
 
         let message: MessageInterface = {
-            _id: uuidv4(), content: textarea_value, type:'user', version: 1
+            _id: uuidv4(), content: textarea_value, type: 'human', version: 1
         }
 
         if (websocket != null) {

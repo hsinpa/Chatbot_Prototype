@@ -81,7 +81,7 @@ class ChatbotGraphAgent(GraphAgent):
 
         stram_chain = chain.astream(variables)
         result = await streaming_exec(websockets=self._websocket, session_id=self._streaming_input.session_id,
-                                      token=self._streaming_input.token,
+                                      token=self._streaming_input.token, identity=ChatbotUserEnum.narrator,
                                       stream=stram_chain)
         return {'final_message': result}
 
@@ -100,7 +100,7 @@ class ChatbotGraphAgent(GraphAgent):
 
         stram_chain = chain.astream(variables)
         result = await streaming_exec(websockets=self._websocket, session_id=self._streaming_input.session_id,
-                                      token=self._streaming_input.token,
+                                      token=self._streaming_input.token, identity=ChatbotUserEnum.bot,
                                       stream=stram_chain)
         return {'final_message': result}
 

@@ -14,7 +14,7 @@ from websocket.socket_static import SocketEvent
 from websocket.websocket_manager import WebSocketManager
 
 
-async def streaming_exec(websockets: WebSocketManager, session_id: str, token: str,
+async def streaming_exec(websockets: WebSocketManager, session_id: str, token: str, identity: ChatbotUserEnum,
                          stream: AsyncIterator[Output]):
     results = ''
     bubble_id = str(uuid.uuid4())
@@ -28,6 +28,7 @@ async def streaming_exec(websockets: WebSocketManager, session_id: str, token: s
                                              bubble_id=bubble_id,
                                              index=index,
                                              time=datetime.now(timezone.utc).timestamp(),
+                                             identity=identity,
                                              type=DataChunkType.Chunk)
 
         json_string = {'event': SocketEvent.bot, **stream_data.model_dump()}
@@ -40,6 +41,7 @@ async def streaming_exec(websockets: WebSocketManager, session_id: str, token: s
                                               token=token,
                                               bubble_id=bubble_id,
                                               index=index,
+                                              identity=identity,
                                               time=datetime.now(timezone.utc).timestamp(),
                                               type=DataChunkType.Complete)
 
