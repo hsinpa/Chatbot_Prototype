@@ -23,16 +23,6 @@ export const cal_container_height = function(force: boolean = false) {
     if (scroll_error_offset <= error_range || force) {
         container_parent.scrollTo({top: scroll_bottom + container_parent.offsetHeight, behavior: "smooth"})
     }
-
-    // console.log('container_parent.scrollHeight', container_parent.scrollHeight);
-    // console.log('container_parent.scrollTop', container_parent.scrollTop);
-    // console.log('container_parent.offsetHeight', container_parent.offsetHeight);
-    // console.log('container_parent.offsetTop', container_parent.offsetTop);
-
-    // console.log('container_dom.scrollHeight', container_dom.scrollHeight);
-    // console.log('container_dom.offsetHeight', container_dom.offsetHeight);
-
-    // console.log('scroll_bottom', scroll_bottom);
 }
 
 const RenderBubbleComp = memo(function({comp}: {comp : MessageInterface | undefined}) {
@@ -69,7 +59,6 @@ export const MainContentView = function() {
     const on_socket_message = function(event_id: string, json_data: any) {
         // try {
             if (json_data['event'] == 'bot') {
-                console.log(json_data);
                 let bubble_id = json_data['bubble_id'];
                 let index = json_data['index'];
                 let data_chunk = json_data['data'];
