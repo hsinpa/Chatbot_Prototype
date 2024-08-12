@@ -27,9 +27,11 @@ class ChatbotAgentState(TypedDict):
     final_message: Annotated[StreamingDataChunkType, lambda x, y: y]
     query: str
     intention: str
+    mix_scenario: str
     chatbot_id: str
     chatroom_id: int
     new_chatroom_summary: str
+
 
 class General_Bullet_Point_Type(BaseModel):
     thought: str = Field(..., description='Why and what you think is important in the given context')

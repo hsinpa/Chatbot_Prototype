@@ -23,6 +23,7 @@ class SimplePromptFactory():
             llm_model: LLMModel = LLMModel.OpenAI,
             model_name: str = OpenAI_Model_4o_mini,
             json_response: bool = False,
+            pydantic_schema: dict[str, Any] = None,
             trace_langfuse: bool = True,
             tools_calling: Sequence[dict[str, Any] | Type[BaseModel] | Type[BaseModel]] = None,
             tools_choice:  Literal["auto", "none", "required", "any"] = 'auto',
@@ -31,6 +32,9 @@ class SimplePromptFactory():
         kwargs = {'temperature': temperature}
         if json_response is True:
             kwargs['model_kwargs'] = {"response_format": {"type": "json_object"}}
+
+        if json_response is True and pydantic_schema is not None:
+            kwargs['model_kwargs']['response_format']['schema'] = pydantic_schema
 
         self._langfuse_handler = None
         if trace_langfuse is True:

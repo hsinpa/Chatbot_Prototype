@@ -19,25 +19,17 @@ from websocket.websocket_manager import WebSocketManager
 class ChatbotGraphAgent(GraphAgent):
     def __init__(self, narrator: ChatbotNPCDBType, chatbot: ChatbotNPCDBType,
                  chatroom_summary: str,
+                 scenario: str,
                  chatroom_id: int, streaming_input: ChatbotStreamingInput, websocket: WebSocketManager):
         self.chatroom_id = chatroom_id
 
         self._narrator = narrator
         self._chatbot = chatbot
+        self._scenario = scenario
 
         self._chatroom_summary = chatroom_summary
         self._streaming_input = streaming_input
         self._websocket = websocket
-
-    def bot_variable(self, chatbot: ChatbotNPCDBType):
-        return {
-            'name': self._chatbot.name,
-            'personality': self._chatbot.personality,
-            'background': self._chatbot.background_story,
-            'goal': self._chatbot.instruction,
-            'summary': self._chatroom_summary,
-        }
-
 
     def scenario_planning(self, state: ChatbotAgentState):
         return {'query': state['query']}
@@ -73,7 +65,7 @@ class ChatbotGraphAgent(GraphAgent):
         ])
 
         variables = {
-            **self.bot_variable(self._narrator),
+            **self.bot_variable(self._narrator, self._chatroom_summary),
             'query': state['query']
         }
 
@@ -92,7 +84,7 @@ class ChatbotGraphAgent(GraphAgent):
         ])
 
         variables = {
-            **self.bot_variable(self._chatbot),
+            **self.bot_variable(self._chatbot, self._chatroom_summary),
             'query': state['query']
         }
 
@@ -125,3 +117,13 @@ class ChatbotGraphAgent(GraphAgent):
         g_compile = g_workflow.compile()
 
         return g_compile
+
+    @staticmethod
+    def bot_variable(chatbot: ChatbotNPCDBType, summary: str):
+        return {
+            'name': chatbot.name,
+            'personality': chatbot.personality,
+            'background': chatbot.background_story,
+            'goal': chatbot.instruction,
+            'summary': summary,
+        }
