@@ -14,17 +14,19 @@ export const ChatRoomView = function() {
     // }, [socket])
 
     return (
-        <div className="h-full flex flex-col">
+      <div className="h-full flex flex-row">
 
-        <Header_Comp chatbot_name='Hsinpa bot'></Header_Comp>
-
-
-        <MainContentView></MainContentView>    
-
-        <div className="bg-gray-100 px-4 py-2">
-          <User_Text_Input></User_Text_Input>
+        <div className="h-full flex flex-col w-0">
         </div>
-        
+
+        <div className="h-full w-auto flex flex-col grow">
+          <Header_Comp chatbot_name='Hsinpa bot'></Header_Comp>
+          <MainContentView></MainContentView>    
+          <div className="bg-gray-100 px-4 py-2">
+            <User_Text_Input></User_Text_Input>
+          </div>
+        </div>
     </div>
+
     )
 }

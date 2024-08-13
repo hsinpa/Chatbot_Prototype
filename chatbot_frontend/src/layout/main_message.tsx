@@ -102,8 +102,8 @@ export const MainMessageView = function() {
     }, [message_id_array])
 
     return (
-        <main className="message_container bg-white flex-1 overflow-y-scroll">
-            <div className="px-4 py-2 flex flex-col gap-2">
+        <main className="bg-white flex-1 overflow-y-scroll">
+            <div className="message_container px-4 py-2 flex flex-col gap-2">
                 {
                     message_id_array.map(x => {
                         return <RenderBubbleComp key={x} comp={get_message_func(x)}></RenderBubbleComp>;
