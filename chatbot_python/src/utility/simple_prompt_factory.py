@@ -3,7 +3,6 @@ from typing import Sequence, Any, Type, Literal
 from langchain_core.output_parsers import BaseOutputParser
 from langchain.schema.messages import SystemMessage
 from langchain.prompts import ChatPromptTemplate, HumanMessagePromptTemplate
-from langchain_openai import ChatOpenAI
 from dotenv import load_dotenv
 from langchain_openai.chat_models.base import BaseChatOpenAI
 from langfuse.callback import CallbackHandler

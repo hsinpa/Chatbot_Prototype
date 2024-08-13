@@ -3,6 +3,7 @@ import uuid
 from agent.MemoryManager import MemoryManager
 from agent.agent_utility import streaming_exec
 from agent.chatbot.ChatbotGraphAgent import ChatbotGraphAgent
+from agent.chatbot.NarratorActionAgent import NarratorActionAgent
 from agent.chatbot.chatbot_type import StreamingDataChunkType, DataChunkType
 from agent.memory.memory_agent import MemoryGraphAgent
 from database.chatbot_messages_db import ChatbotMessagesDB
@@ -31,12 +32,18 @@ class ChatbotManager:
         narrator_bot = next((b for b in bots if b.type == ChatbotUserEnum.narrator.value), None)
         chat_bot = next((b for b in bots if b.type == ChatbotUserEnum.bot.value), None)
 
-        chat_agent = ChatbotGraphAgent(narrator=narrator_bot, chatbot=chat_bot,
+        streaming_input = ChatbotStreamingInput(session_id=c_input.session_id, token=c_input.token)
+
+        narrator_agent = NarratorActionAgent(narrator_bot,
+                                             user_action=c_input.text,
+                                             scenario=scenario_db_type.background,
+                                             streaming_input=streaming_input,
+                                             websocket=self._websockets)
+
+        chat_agent = ChatbotGraphAgent(chatbot=chat_bot, narrator_agent=narrator_agent,
                                        chatroom_summary=chatroom_db_type.summary,
-                                       streaming_input=ChatbotStreamingInput(session_id=c_input.session_id,
-                                                                             token=c_input.token),
-                                       websocket=self._websockets, chatroom_id=1
-                                       )
+                                       streaming_input=streaming_input,
+                                       websocket=self._websockets)
 
         chat_graph = chat_agent.create_graph()
         chat_graph = chat_graph.with_config({'callbacks': [get_langfuse_callback()], "run_name": 'Chatbot chat chain'})
@@ -60,9 +67,9 @@ class ChatbotManager:
 
         chat_graph = self.get_chat_graph(c_input, scenario_db_type, all_chatbot_npc, chatroom_db_type)
 
-        result = await chat_graph.ainvoke({'query': c_input.text})
+        result = await chat_graph.ainvoke({'query': c_input.text, 'scenario': scenario_db_type.background})
 
-        bot_message: StreamingDataChunkType = result['final_message']
+        bot_message: list[StreamingDataChunkType] = result['final_message']
 
         messages = self._save_message_to_db(c_input, chatroom_db_type, bot_message)
         self.chatbot_message_db.update_summary(chatroom_db_type.id, result['new_chatroom_summary'])
@@ -72,20 +79,24 @@ class ChatbotManager:
 
     # * DB Operation
     def _save_message_to_db(self, c_input: ChatbotInput, chatroom_db: ChatRoomDBType,
-                            bot_message: StreamingDataChunkType):
-        user_bubble_id = str(uuid.uuid4())
+                            bot_messages: list[StreamingDataChunkType]):
+
+        bot_message_db_inputs: list[ChatMessageDBInputType] = []
+        for m in bot_messages:
+            bot_message_db_inputs.append(
+                ChatMessageDBInputType(
+                    chatroom_id=chatroom_db.id, body=m.data,
+                    message_type=m.identity,
+                    bubble_id=m.bubble_id, user_id=m.source_id
+                )
+            )
 
         insert_messages_data = [
             ChatMessageDBInputType(
                 chatroom_id=chatroom_db.id, body=c_input.text,
                 message_type=ChatbotUserEnum.human,
-                bubble_id=user_bubble_id, user_id='hsinpa@gmail.com'
-            ),
-            ChatMessageDBInputType(
-                chatroom_id=chatroom_db.id, body=bot_message.data,
-                message_type=ChatbotUserEnum.bot,
-                bubble_id=bot_message.bubble_id, user_id='0d225970-8626-4f47-8044-4f1ec5961ee7'
-            ),
+                bubble_id=str(uuid.uuid4()), user_id=c_input.user_id
+            ), *bot_message_db_inputs
         ]
 
         # insert user

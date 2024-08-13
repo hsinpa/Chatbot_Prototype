@@ -4,7 +4,8 @@ from langgraph.constants import END
 from langgraph.graph import StateGraph
 
 from agent.GraphAgent import GraphAgent
-from agent.agent_utility import streaming_exec
+from agent.agent_utility import streaming_exec, bot_variable
+from agent.chatbot.NarratorActionAgent import NarratorActionAgent
 from agent.chatbot.chatbot_type import ChatbotAgentState
 from model.chatbot_model import ChatbotNPCDBType, ChatbotUserEnum
 from prompt.chatbot_prompt import GENERAL_CHATBOT_SYSTEM_PROMPT, GENERAL_HUMAN_PROMPT, \
@@ -17,15 +18,11 @@ from websocket.websocket_manager import WebSocketManager
 
 
 class ChatbotGraphAgent(GraphAgent):
-    def __init__(self, narrator: ChatbotNPCDBType, chatbot: ChatbotNPCDBType,
-                 chatroom_summary: str,
-                 scenario: str,
-                 chatroom_id: int, streaming_input: ChatbotStreamingInput, websocket: WebSocketManager):
-        self.chatroom_id = chatroom_id
+    def __init__(self, chatbot: ChatbotNPCDBType, narrator_agent: NarratorActionAgent,
+                 chatroom_summary: str, streaming_input: ChatbotStreamingInput, websocket: WebSocketManager):
 
-        self._narrator = narrator
+        self._narrator_agent = narrator_agent
         self._chatbot = chatbot
-        self._scenario = scenario
 
         self._chatroom_summary = chatroom_summary
         self._streaming_input = streaming_input
@@ -36,7 +33,6 @@ class ChatbotGraphAgent(GraphAgent):
 
     def conditional_planning(self, state: ChatbotAgentState):
         start_sentence = state['query'][:7]
-        print('start_sentence', start_sentence)
         if start_sentence == 'action:':
             return 'narrator_talk'
         else:
@@ -58,24 +54,8 @@ class ChatbotGraphAgent(GraphAgent):
         summary_str = await summary_chain.ainvoke({})
         return {'new_chatroom_summary': summary_str}
 
-    async def narrator_chain(self, state: ChatbotAgentState):
-        prompt_template = ChatPromptTemplate.from_messages([
-            ("system", GENERAL_NARRATOR_SYSTEM_PROMPT),
-            ("user", GENERAL_HUMAN_PROMPT),
-        ])
-
-        variables = {
-            **self.bot_variable(self._narrator, self._chatroom_summary),
-            'query': state['query']
-        }
-
-        chain = (prompt_template | gpt_model(model_name=OpenAI_Model_4o_mini) | StrOutputParser())
-
-        stram_chain = chain.astream(variables)
-        result = await streaming_exec(websockets=self._websocket, session_id=self._streaming_input.session_id,
-                                      token=self._streaming_input.token, identity=ChatbotUserEnum.narrator,
-                                      stream=stram_chain)
-        return {'final_message': result}
+    async def mix_scenario(self, state: ChatbotAgentState):
+        pass
 
     async def chat_chain(self, state: ChatbotAgentState):
         prompt_template = ChatPromptTemplate.from_messages([
@@ -84,7 +64,7 @@ class ChatbotGraphAgent(GraphAgent):
         ])
 
         variables = {
-            **self.bot_variable(self._chatbot, self._chatroom_summary),
+            **bot_variable(self._chatbot, self._chatroom_summary),
             'query': state['query']
         }
 
@@ -92,9 +72,10 @@ class ChatbotGraphAgent(GraphAgent):
 
         stram_chain = chain.astream(variables)
         result = await streaming_exec(websockets=self._websocket, session_id=self._streaming_input.session_id,
-                                      token=self._streaming_input.token, identity=ChatbotUserEnum.bot,
+                                      token=self._streaming_input.token,
+                                      bot_id=self._chatbot.id, identity=ChatbotUserEnum.bot,
                                       stream=stram_chain)
-        return {'final_message': result}
+        return {'final_message': [result]}
 
     def create_graph(self):
         g_workflow = StateGraph(ChatbotAgentState)
@@ -102,7 +83,8 @@ class ChatbotGraphAgent(GraphAgent):
         g_workflow.add_node('scenario_planning', self.scenario_planning)
 
         g_workflow.add_node('chatbot_talk', self.chat_chain)
-        g_workflow.add_node('narrator_talk', self.narrator_chain)
+        g_workflow.add_node('narrator_talk', self._narrator_agent.create_graph())
+        g_workflow.add_node('mix_scenario', self.mix_scenario)
 
         g_workflow.add_node('message_summary', self.summary_chatbot_message)
 
@@ -112,18 +94,12 @@ class ChatbotGraphAgent(GraphAgent):
 
         g_workflow.add_edge('narrator_talk', 'chatbot_talk')
         g_workflow.add_edge('chatbot_talk', 'message_summary')
+        g_workflow.add_edge('chatbot_talk', 'mix_scenario')
+
         g_workflow.add_edge('message_summary', END)
+        g_workflow.add_edge('mix_scenario', END)
 
         g_compile = g_workflow.compile()
 
         return g_compile
 
-    @staticmethod
-    def bot_variable(chatbot: ChatbotNPCDBType, summary: str):
-        return {
-            'name': chatbot.name,
-            'personality': chatbot.personality,
-            'background': chatbot.background_story,
-            'goal': chatbot.instruction,
-            'summary': summary,
-        }

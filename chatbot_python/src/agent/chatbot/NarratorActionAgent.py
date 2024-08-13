@@ -2,13 +2,13 @@ from langchain_core.output_parsers import JsonOutputParser, StrOutputParser
 from langchain_core.prompts import ChatPromptTemplate
 from langgraph.constants import END
 from langgraph.graph import StateGraph
+from langfuse.callback import CallbackHandler
 
 from agent.GraphAgent import GraphAgent
-from agent.agent_utility import streaming_exec
-from agent.chatbot.ChatbotGraphAgent import ChatbotGraphAgent
+from agent.agent_utility import streaming_exec, bot_variable
 from agent.chatbot.narrator_type import NarratorActionState, ActionType
 from model.chatbot_model import ChatbotNPCDBType, ChatbotUserEnum
-from prompt.chatbot_prompt import GENERAL_NARRATOR_SYSTEM_PROMPT, GENERAL_HUMAN_PROMPT
+from prompt.chatbot_prompt import GENERAL_NARRATOR_SYSTEM_PROMPT, GENERAL_HUMAN_PROMPT, GENERAL_NARRATOR_HUMAN_PROMPT
 from prompt.scenario_prompt import ScenarioValidationPrompt
 from router.chatbot_route_model import ChatbotStreamingInput
 from utility.llm_static import LLMModel, Llama_3_1_8b, get_model
@@ -32,53 +32,53 @@ class NarratorActionAgent(GraphAgent):
             llm_model=LLMModel.TogetherAI,
             model_name=Llama_3_1_8b,
             json_response=True,
-            pydantic_schema=ActionType.schema()
+            pydantic_schema=ActionType.schema(),
+            trace_name='Validation Chain'
         )
 
         simple_chain = factory.create_chain(
             output_parser=JsonOutputParser(pydantic_object=ActionType),
             human_prompt_text=ScenarioValidationPrompt,
-            partial_variables={'scenario': self._scenario, 'action': self._user_action},
+            input_variables=['scenario', 'action'],
         )
 
-        validation_result: ActionType = await simple_chain.ainvoke({})
-        print(validation_result)
+        validation_result = ActionType(**await simple_chain.ainvoke(
+            {'scenario': self._scenario, 'action': self._user_action}
+        ))
 
-        return {'is_valid': validation_result.is_valid}
+        return {'is_valid': validation_result.is_valid, 'validation_analysis': validation_result.thought}
 
-    async def mix_scenario_chain(self, state: NarratorActionState):
+    async def scenario_expand_chain(self, state: NarratorActionState):
         prompt_template = ChatPromptTemplate.from_messages([
             ("system", GENERAL_NARRATOR_SYSTEM_PROMPT),
-            ("user", GENERAL_HUMAN_PROMPT),
+            ("user", GENERAL_NARRATOR_HUMAN_PROMPT),
         ])
 
         variables = {
-            **ChatbotGraphAgent.bot_variable(self._narrator, self._scenario),
-            'query': self._user_action
+            **bot_variable(self._narrator, self._scenario),
+            'query': self._user_action, 'validation_analysis': state['validation_analysis']
         }
 
-        chain = (prompt_template | gpt_model() | StrOutputParser())
+        chain = (prompt_template | gpt_model() | StrOutputParser()).with_config(
+            {'run_name': 'Mix Scenario', "callbacks": [CallbackHandler(user_id='hsinpa')]}
+        )
 
         stram_chain = chain.astream(variables)
         result = await streaming_exec(websockets=self._websocket, session_id=self._streaming_input.session_id,
-                                      token=self._streaming_input.token, identity=ChatbotUserEnum.narrator,
+                                      token=self._streaming_input.token, bot_id=self._narrator.id,
+                                      identity=ChatbotUserEnum.narrator,
                                       stream=stram_chain)
-        return {'narrator_response': result}
-
-    def condition_router(self, state: NarratorActionState):
-        if state['is_valid']:
-            return 'mix_scenario'
-        return END
+        return {'narrator_response': result, 'final_message': [result]}
 
     def create_graph(self):
         g_workflow = StateGraph(NarratorActionState)
 
-        g_workflow.add_node('validation', self.validation_chain)
-        g_workflow.add_node('mix_scenario', self.mix_scenario_chain)
+        g_workflow.add_node('validation_node', self.validation_chain)
+        g_workflow.add_node('scenario_node', self.scenario_expand_chain)
 
-        g_workflow.set_entry_point('validation')
-        g_workflow.add_conditional_edges('validation', self.condition_router)
-        g_workflow.add_edge('mix_scenario', END)
+        g_workflow.set_entry_point('validation_node')
+        g_workflow.add_edge('validation_node', 'scenario_node')
+        g_workflow.add_edge('scenario_node', END)
 
         g_compile = g_workflow.compile()
 

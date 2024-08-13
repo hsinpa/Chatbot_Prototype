@@ -27,6 +27,15 @@ Do not suggest any actions to the player, just describe the physical environment
 The descriptions should be short and precise.\
 """
 
+GENERAL_NARRATOR_HUMAN_PROMPT = """\
+The human user try the following actions
+'''
+{query}
+'''
+
+Which lead to '{validation_analysis}'
+"""
+
 GENERAL_CHATBOT_SYSTEM_PROMPT = """\
 You are a chatbot call '{name}', with several configuration to consider. 
 

@@ -1,20 +1,20 @@
 import json
 import uuid
 from datetime import datetime, timezone
-from typing import AsyncIterator
+from typing import AsyncIterator, Any
 
 from langchain_core.messages import MessageLikeRepresentation
-from langchain_core.runnables import Runnable
 from langchain_core.runnables.utils import Output
 
 from agent.chatbot.chatbot_type import StreamingDataChunkType, DataChunkType
 from agent.memory.memory_type import ChatKnowledgeType, Category
-from model.chatbot_model import ChatMessageDBInputType, ChatbotUserEnum
+from model.chatbot_model import ChatMessageDBInputType, ChatbotUserEnum, ChatbotNPCDBType
 from websocket.socket_static import SocketEvent
 from websocket.websocket_manager import WebSocketManager
 
 
-async def streaming_exec(websockets: WebSocketManager, session_id: str, token: str, identity: ChatbotUserEnum,
+async def streaming_exec(websockets: WebSocketManager, session_id: str, token: str,
+                         bot_id: str, identity: ChatbotUserEnum,
                          stream: AsyncIterator[Output]):
     results = ''
     bubble_id = str(uuid.uuid4())
@@ -27,6 +27,7 @@ async def streaming_exec(websockets: WebSocketManager, session_id: str, token: s
                                              token=token,
                                              bubble_id=bubble_id,
                                              index=index,
+                                             source_id=bot_id,
                                              time=datetime.now(timezone.utc).timestamp(),
                                              identity=identity,
                                              type=DataChunkType.Chunk)
@@ -41,6 +42,7 @@ async def streaming_exec(websockets: WebSocketManager, session_id: str, token: s
                                               token=token,
                                               bubble_id=bubble_id,
                                               index=index,
+                                              source_id=bot_id,
                                               identity=identity,
                                               time=datetime.now(timezone.utc).timestamp(),
                                               type=DataChunkType.Complete)
@@ -69,7 +71,6 @@ def db_message_to_str(messages: list[ChatMessageDBInputType]):
 
 
 def db_memory_to_str(memories: list[ChatKnowledgeType]):
-
     if memories is None or len(memories) <= 0:
         return 'Empty'
 
@@ -84,3 +85,13 @@ def db_memory_to_str(memories: list[ChatKnowledgeType]):
             item_memo_str += f'ID [{m.knowledge_id}]: {m.knowledge}\n'
 
     return knowledge_memo_str + item_memo_str
+
+
+def bot_variable(chatbot: ChatbotNPCDBType, summary: str):
+    return {
+        'name': chatbot.name,
+        'personality': chatbot.personality,
+        'background': chatbot.background_story,
+        'goal': chatbot.instruction,
+        'summary': summary,
+    }
