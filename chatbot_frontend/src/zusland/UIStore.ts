@@ -9,13 +9,12 @@ type UIStoreState = {
 
 export const useUIStore = create<UIStoreState>()(
     immer((set, get) => ({
-        side_panel_flag: true,
+        side_panel_flag: false,
         set_side_panel(enable: boolean) {
             set(state => {
                 state.side_panel_flag = enable;
             })
         }
     })   
-
     )
 )
