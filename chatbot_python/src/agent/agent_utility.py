@@ -13,7 +13,7 @@ from websocket.socket_static import SocketEvent
 from websocket.websocket_manager import WebSocketManager
 
 
-async def streaming_exec(websockets: WebSocketManager, session_id: str, token: str,
+async def streaming_exec(websockets: WebSocketManager, websocket_id: str, session_id: str, token: str,
                          bot_id: str, identity: ChatbotUserEnum,
                          stream: AsyncIterator[Output]):
     results = ''
@@ -33,7 +33,7 @@ async def streaming_exec(websockets: WebSocketManager, session_id: str, token: s
                                              type=DataChunkType.Chunk)
 
         json_string = {'event': SocketEvent.bot, **stream_data.model_dump()}
-        await websockets.send(session_id=session_id, data=json.dumps(json_string))
+        await websockets.send(socket_id=websocket_id, data=json.dumps(json_string))
         results = results + data_chunk
         index += 1
 

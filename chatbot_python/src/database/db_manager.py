@@ -50,8 +50,6 @@ async def async_db_ops(sql_syntax: str, fetch_type: FetchType = FetchType.Idle, 
     if parameters is None:
         parameters = []
 
-    print(asyncio.get_event_loop_policy())
-
     async with await psycopg.AsyncConnection.connect(get_conn_uri(), row_factory=dict_row) as aconn:
         async with aconn.cursor() as acur:
             await acur.execute(sql_syntax, parameters)

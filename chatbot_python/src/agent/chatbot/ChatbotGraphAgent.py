@@ -33,6 +33,8 @@ class ChatbotGraphAgent(GraphAgent):
 
     def conditional_planning(self, state: ChatbotAgentState):
         start_sentence = state['query'][:7]
+
+        print(start_sentence)
         if start_sentence == 'action:':
             return 'narrator_talk'
         else:
@@ -71,7 +73,8 @@ class ChatbotGraphAgent(GraphAgent):
         chain = (prompt_template | gpt_model(model_name=OpenAI_Model_4o_mini) | StrOutputParser())
 
         stram_chain = chain.astream(variables)
-        result = await streaming_exec(websockets=self._websocket, session_id=self._streaming_input.session_id,
+        result = await streaming_exec(websockets=self._websocket, websocket_id=self._streaming_input.websocket_id,
+                                      session_id=self._streaming_input.session_id,
                                       token=self._streaming_input.token,
                                       bot_id=self._chatbot.id, identity=ChatbotUserEnum.bot,
                                       stream=stram_chain)

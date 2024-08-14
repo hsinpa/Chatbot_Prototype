@@ -6,6 +6,7 @@ from langchain_core.output_parsers import StrOutputParser, PydanticToolsParser
 from agent.ChatbotManager import ChatbotManager
 from agent.MemoryManager import MemoryManager
 from agent.tools.weather_tool import weather_tool, WeatherToolType, WeatherOutputParser
+from database.chatbot_messages_db import ChatbotMessagesDB
 from router.chatbot_route_model import ChatbotInput
 from utility.simple_prompt_factory import SimplePromptFactory
 from websocket.websocket_manager import get_websocket
@@ -26,7 +27,14 @@ def chat_stream(c_input: ChatbotInput, background_tasks: BackgroundTasks):
 
     return {'token': c_input.token}
 
+@router.get('/message_history/user/{user_id}/session/{session_id}')
+async def get_message_history(user_id: str, session_id: str):
+    message_db = ChatbotMessagesDB()
+    print(user_id, session_id)
+    f_messages = message_db.get_messages(user_id=user_id, session_id=session_id)
+    print(f_messages)
 
+    return f_messages
 @router.get('/test_tool_calling')
 async def test_tool_calling():
     print(weather_tool)

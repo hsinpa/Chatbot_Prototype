@@ -16,17 +16,17 @@ class WebSocketManager:
     def __init__(self):
         self.active_connections: typing.Dict[str, WebSocket] = {}
 
-    async def send(self, session_id: str, data: str):
-        if session_id in self.active_connections:
-            await self.active_connections[session_id].send_text(data)
+    async def send(self, socket_id: str, data: str):
+        if socket_id in self.active_connections:
+            await self.active_connections[socket_id].send_text(data)
 
-    async def connect(self, session_id: str, websocket: WebSocket):
+    async def connect(self, socket_id: str, websocket: WebSocket):
         await websocket.accept()
-        self.active_connections[session_id] = websocket
+        self.active_connections[socket_id] = websocket
 
-    def disconnect(self, session_id: str):
-        if session_id in self.active_connections:
-            del self.active_connections[session_id]
+    def disconnect(self, socket_id: str):
+        if socket_id in self.active_connections:
+            del self.active_connections[socket_id]
 
     async def send_personal_message(self, message: str, websocket: WebSocket):
         await websocket.send_text(message)

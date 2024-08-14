@@ -5,6 +5,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { wsContext } from "../App";
 import { KeyboardEventCode } from "../utility/static_text";
 import { Clamp } from "../utility/utility_func";
+import { GetWebOptions } from "../types/api_static";
 
 type KeyValuePairType = {
     [key: string]: number;
@@ -34,19 +35,20 @@ export const User_Text_Input = function() {
 
     let fire_submit_event = function() {
         console.log(textarea_value);
-
+        let web_option = GetWebOptions();
         let message: MessageInterface = {
             _id: uuidv4(), content: textarea_value, type: 'human', version: 1
         }
 
-        if (websocket != null) {
+        if (websocket != null && web_option != null) {
             console.log(websocket.id)
             fetch('http://localhost:8842/chatbot/chat_stream', 
                 {method:'post', headers:{"Content-Type": "application/json"}, 
                 body: JSON.stringify({
                 text: message.content,
-                user_id: 'hsinpa@gmail.com',
-                session_id: websocket.id,
+                user_id: web_option.user_id,
+                session_id: web_option.session_id,
+                websocket_id: websocket.id,
                 token: message._id
             })});
         }

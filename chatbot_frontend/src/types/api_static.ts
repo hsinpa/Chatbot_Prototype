@@ -1,3 +1,5 @@
+import { WebParamInterface } from "./chatbot_type";
+
 export let ENV = 'dev';
 
 let SELF_DOMAIN = 'localhost:8842';
@@ -19,3 +21,18 @@ export const Get_WS = function() {
 export const Get_HTTP = function() {
     return HTTP+DOMAIN;
 }
+
+export const GetWebOptions = function() {
+    let params = new URLSearchParams(window.location.search);
+    let user_id = params.get("user_id");
+    let session_id = params.get("session_id");
+
+    if (user_id == undefined || session_id == undefined) return null;
+
+    let options: WebParamInterface = {
+        user_id : user_id,
+        session_id : session_id,
+    };
+
+    return options;
+} 

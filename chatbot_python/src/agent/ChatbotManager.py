@@ -32,7 +32,9 @@ class ChatbotManager:
         narrator_bot = next((b for b in bots if b.type == ChatbotUserEnum.narrator.value), None)
         chat_bot = next((b for b in bots if b.type == ChatbotUserEnum.bot.value), None)
 
-        streaming_input = ChatbotStreamingInput(session_id=c_input.session_id, token=c_input.token)
+        streaming_input = ChatbotStreamingInput(session_id=c_input.session_id,
+                                                token=c_input.token,
+                                                websocket_id=c_input.websocket_id)
 
         narrator_agent = NarratorActionAgent(narrator_bot,
                                              user_action=c_input.text,
