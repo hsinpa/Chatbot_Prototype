@@ -32,4 +32,10 @@ export function DoDelayAction(time : number) : Promise<void> {
 
 export function Clamp(value : number, min : number, max : number) {
     return Math.min(Math.max(value, min), max);
-  };
+};
+
+export function FormatString(string: string, params: any[]) {
+return string.replace(/{(\d+)}/g, (match, index) => {
+    return typeof params[index] !== 'undefined' ? params[index] : match;
+});
+}

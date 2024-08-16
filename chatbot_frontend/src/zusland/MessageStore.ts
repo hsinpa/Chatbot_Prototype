@@ -12,6 +12,7 @@ type MessageStoreState = {
     get_message(id: string): MessageInterface | undefined,
     push_message(message: MessageInterface): void,
     update_message(message: MessageInterface): void
+    clear(): void
 }
 
 export const useMessageStore = create<MessageStoreState>()(
@@ -45,6 +46,13 @@ export const useMessageStore = create<MessageStoreState>()(
             set(state => {
                 state.message_array = [...state.message_array]
                 state.message_map.set(message._id, {...message});
+            });
+        },
+
+        clear() {
+            set(state => {
+                state.message_array =[];
+                state.message_map.clear();
             });
         }
     })),

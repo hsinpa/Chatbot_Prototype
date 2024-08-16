@@ -1,4 +1,7 @@
 import uuid
+from typing import List
+
+from pydantic import TypeAdapter
 
 from agent.MemoryManager import MemoryManager
 from agent.agent_utility import streaming_exec
@@ -28,6 +31,7 @@ class ChatbotManager:
 
     def get_chat_graph(self, c_input: ChatbotInput,
                        scenario_db_type: ChatScenarioDBType,
+                       m_history: List[ChatMessageDBInputType],
                        bots: list[ChatbotNPCDBType], chatroom_db_type: ChatRoomDBType):
         narrator_bot = next((b for b in bots if b.type == ChatbotUserEnum.narrator.value), None)
         chat_bot = next((b for b in bots if b.type == ChatbotUserEnum.bot.value), None)
@@ -38,11 +42,13 @@ class ChatbotManager:
 
         narrator_agent = NarratorActionAgent(narrator_bot,
                                              user_action=c_input.text,
+                                             m_history=m_history,
                                              scenario=scenario_db_type.background,
                                              streaming_input=streaming_input,
                                              websocket=self._websockets)
 
         chat_agent = ChatbotGraphAgent(chatbot=chat_bot, narrator_agent=narrator_agent,
+                                       m_history=m_history,
                                        chatroom_summary=chatroom_db_type.summary,
                                        streaming_input=streaming_input,
                                        websocket=self._websockets)
@@ -63,11 +69,15 @@ class ChatbotManager:
                                                                             scenario_id=scenario_db_type.id,
                                                                             session_id=c_input.session_id)
 
+        history_record_list = self.chatbot_message_db.get_messages(user_id=c_input.user_id, session_id=c_input.session_id)
+        ta = TypeAdapter(List[ChatMessageDBInputType])
+        history_record = ta.validate_python(history_record_list)
+
         all_chatbot_ids = scenario_db_type.chatbot_id.copy()
         all_chatbot_ids.append(scenario_db_type.narrator_id)
         all_chatbot_npc = await self.npc_db.get_bots(all_chatbot_ids)
 
-        chat_graph = self.get_chat_graph(c_input, scenario_db_type, all_chatbot_npc, chatroom_db_type)
+        chat_graph = self.get_chat_graph(c_input, scenario_db_type, history_record, all_chatbot_npc, chatroom_db_type)
 
         result = await chat_graph.ainvoke({'query': c_input.text, 'scenario': scenario_db_type.background})
 

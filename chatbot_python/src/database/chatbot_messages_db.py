@@ -12,7 +12,7 @@ class ChatbotMessagesDB:
         with psycopg.connect(get_conn_uri(), row_factory=dict_row) as conn:
             with conn.cursor() as cur:
                 cur.execute(f"""SELECT chatbot_messages.user_id as user_id, chatbot_messages.id as message_id, 
-                bubble_id, body, message_type 
+                chatbot_messages.created_date as created_date, bubble_id, body, message_type, chatroom_id
                 FROM {self.Table}
                 LEFT JOIN chatroom on chatroom.id=chatbot_messages.chatroom_id
                 WHERE chatroom.session_id=%s and chatroom.user_id=%s""", (session_id, user_id))

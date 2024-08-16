@@ -1,3 +1,5 @@
+from typing import List
+
 from langchain_core.output_parsers import StrOutputParser, JsonOutputParser
 from langchain_core.prompts import ChatPromptTemplate
 from langgraph.constants import END
@@ -7,7 +9,7 @@ from agent.GraphAgent import GraphAgent
 from agent.agent_utility import streaming_exec, bot_variable
 from agent.chatbot.NarratorActionAgent import NarratorActionAgent
 from agent.chatbot.chatbot_type import ChatbotAgentState
-from model.chatbot_model import ChatbotNPCDBType, ChatbotUserEnum
+from model.chatbot_model import ChatbotNPCDBType, ChatbotUserEnum, ChatMessageDBInputType
 from prompt.chatbot_prompt import GENERAL_CHATBOT_SYSTEM_PROMPT, GENERAL_HUMAN_PROMPT, \
     GENERAL_CHATBOT_MESSAGE_MERGE_PROMPT, GENERAL_NARRATOR_SYSTEM_PROMPT
 from router.chatbot_route_model import ChatbotStreamingInput
@@ -19,7 +21,8 @@ from websocket.websocket_manager import WebSocketManager
 
 class ChatbotGraphAgent(GraphAgent):
     def __init__(self, chatbot: ChatbotNPCDBType, narrator_agent: NarratorActionAgent,
-                 chatroom_summary: str, streaming_input: ChatbotStreamingInput, websocket: WebSocketManager):
+                 m_history: List[ChatMessageDBInputType], chatroom_summary: str,
+                 streaming_input: ChatbotStreamingInput, websocket: WebSocketManager):
 
         self._narrator_agent = narrator_agent
         self._chatbot = chatbot

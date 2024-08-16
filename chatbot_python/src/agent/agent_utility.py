@@ -4,6 +4,7 @@ from datetime import datetime, timezone
 from typing import AsyncIterator, Any
 
 from langchain_core.messages import MessageLikeRepresentation
+from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.runnables.utils import Output
 
 from agent.chatbot.chatbot_type import StreamingDataChunkType, DataChunkType
@@ -68,6 +69,16 @@ def db_message_to_str(messages: list[ChatMessageDBInputType]):
         message_str += f'Message from {m.message_type.value}: \n{m.body}'
 
     return message_str
+
+
+def db_message_to_prompt(system_prompt: str, user_latest_input: str,
+                         messages: list[ChatMessageDBInputType]) -> ChatPromptTemplate:
+    agent_message = [('system', system_prompt)]
+
+    agent_message.append(('user', user_latest_input))
+
+    prompt_template = ChatPromptTemplate(agent_message)
+    return prompt_template
 
 
 def db_memory_to_str(memories: list[ChatKnowledgeType]):

@@ -16,8 +16,11 @@ import { Get_WS } from './types/api_static.ts';
 //   console.log("Message from server ", event.data);
 // });
 
+  // <React.StrictMode>
+  // <App />
+  /* </React.StrictMode>, */
+
+
 ReactDOM.createRoot(document.getElementById('root')!).render(
-  <React.StrictMode>
     <App />
-  </React.StrictMode>,
 )

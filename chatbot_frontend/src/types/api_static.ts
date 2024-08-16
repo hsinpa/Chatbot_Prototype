@@ -1,25 +1,19 @@
 import { WebParamInterface } from "./chatbot_type";
 
-export let ENV = 'dev';
-
-let SELF_DOMAIN = 'localhost:8842';
-let SELF_HTTP = 'http://';
-let SELF_SOCKET = 'ws://';
-
-let PROD_DOMAIN = 'localhost:8842';
-let PROD_HTTP = 'https://';
-let PROD_SOCKET = 'wss://';
-
-export const DOMAIN = (ENV == 'dev') ? SELF_DOMAIN : PROD_DOMAIN;
-export const HTTP = (ENV == 'dev') ? SELF_HTTP : PROD_HTTP;
-export const SOCKET = (ENV == 'dev') ? SELF_SOCKET : PROD_SOCKET;
+export const API = Object.freeze({
+    'Fetch_History': '/chatbot/message_history/user/{0}/session/{1}'
+});
 
 export const Get_WS = function() {
-    return SOCKET+SELF_DOMAIN+'/ws';
+    return import.meta.env.VITE_WSS_DOMAIN;
 }
 
 export const Get_HTTP = function() {
-    return HTTP+DOMAIN;
+    return import.meta.env.VITE_API_DOMAIN;
+}
+
+export const CombineAPI = function(url: string) {
+    return Get_HTTP() + url;
 }
 
 export const GetWebOptions = function() {

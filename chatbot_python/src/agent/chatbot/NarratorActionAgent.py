@@ -1,3 +1,5 @@
+from typing import List
+
 from langchain_core.output_parsers import JsonOutputParser, StrOutputParser
 from langchain_core.prompts import ChatPromptTemplate
 from langgraph.constants import END
@@ -7,7 +9,7 @@ from langfuse.callback import CallbackHandler
 from agent.GraphAgent import GraphAgent
 from agent.agent_utility import streaming_exec, bot_variable
 from agent.chatbot.narrator_type import NarratorActionState, ActionType
-from model.chatbot_model import ChatbotNPCDBType, ChatbotUserEnum
+from model.chatbot_model import ChatbotNPCDBType, ChatbotUserEnum, ChatMessageDBInputType
 from prompt.chatbot_prompt import GENERAL_NARRATOR_SYSTEM_PROMPT, GENERAL_NARRATOR_HUMAN_PROMPT
 from prompt.scenario_prompt import ScenarioValidationPrompt
 from router.chatbot_route_model import ChatbotStreamingInput
@@ -19,14 +21,14 @@ from websocket.websocket_manager import WebSocketManager
 
 class NarratorActionAgent(GraphAgent):
 
-    def __init__(self, narrator: ChatbotNPCDBType, user_action: str, scenario: str,
+    def __init__(self, narrator: ChatbotNPCDBType, m_history: List[ChatMessageDBInputType],
+                 user_action: str, scenario: str,
                  streaming_input: ChatbotStreamingInput, websocket: WebSocketManager):
         self._narrator = narrator
         self._user_action = user_action
         self._scenario = scenario
         self._streaming_input = streaming_input
         self._websocket = websocket
-        print('self._streaming_input', self._streaming_input)
 
     async def validation_chain(self, state: NarratorActionState):
         factory = SimplePromptFactory(
@@ -41,7 +43,6 @@ class NarratorActionAgent(GraphAgent):
             human_prompt_text=ScenarioValidationPrompt,
             input_variables=['scenario', 'action'],
         )
-        print('self._streaming_input', self._streaming_input)
 
         validation_result = ActionType(**await simple_chain.ainvoke(
             {'scenario': self._scenario, 'action': self._user_action}

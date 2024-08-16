@@ -4,8 +4,9 @@ import { UserInputBubbleComp } from "../components/UserInputBubble";
 import { MessageInterface } from "../types/chatbot_type";
 import { useMessageStore } from "../zusland/MessageStore";
 import { wsContext } from "../App";
-import { Clamp } from "../utility/utility_func";
+import { Clamp, FormatString } from "../utility/utility_func";
 import { NarratorBubbleComp } from "../components/NarratorBubble";
+import { API, CombineAPI, GetWebOptions } from "../types/api_static";
 
 
 export const cal_container_height = function(force: boolean = false) {
@@ -49,12 +50,31 @@ function arePropsEqual(oldProps: {comp: MessageInterface | undefined},
 }
 
 export const MainMessageView = function() {
-    let message_id_array = useMessageStore(state=>state.message_array)
-    let get_message_func = useMessageStore(state=>state.get_message)
-    let update_message_func = useMessageStore(state=>state.update_message)
-    let push_message_func = useMessageStore(state=>state.push_message)
+    let message_id_array = useMessageStore(state => state.message_array)
+    let get_message_func = useMessageStore(state => state.get_message)
+    let update_message_func = useMessageStore(state => state.update_message)
+    let push_message_func = useMessageStore(state => state.push_message)
+    let clear_message_func = useMessageStore(state => state.clear)
 
     let socket_manager = useContext(wsContext);
+
+    const fetch_sync_message = async function(user_id: string, session_id: string) {
+        let url = CombineAPI(FormatString(API.Fetch_History, [user_id, session_id]));
+
+        let messages: any[] = await (await fetch(url)).json();
+
+        console.log(messages);
+        for (let i = 0; i < messages.length; i++) {        
+            let message_type = {
+                _id: messages[i].bubble_id,
+                content: messages[i].body,
+                type: messages[i].message_type,
+                version: 1
+            }
+
+            push_message_func(message_type);
+        }
+    }
 
     const on_socket_message = function(event_id: string, json_data: any) {
         // try {
@@ -85,8 +105,6 @@ export const MainMessageView = function() {
     }
 
     useEffect(() => {
-        console.log(socket_manager);
-
         socket_manager?.ListenToEvent('websocket', on_socket_message);
 
         return () => {
@@ -95,6 +113,19 @@ export const MainMessageView = function() {
 
     }, [socket_manager])
     
+
+    useEffect(() => {
+        let web_option = GetWebOptions();
+        if (web_option != null)
+            fetch_sync_message(web_option.user_id, web_option.session_id);
+
+        return () => {
+            console.log('clear');
+            clear_message_func();
+        }
+
+
+        }, []); 
 
     useEffect(() => {
         cal_container_height(true);
