@@ -24,7 +24,7 @@ class ChatKnowledgeType(BaseModel):
     knowledge: str = Field(..., alias='body',
                            description="""Condensed bit of knowledge to be saved for future reference in the format:
 [person(s) this is relevant to] [fact to store] (e.g. Husband doesn't like tuna; I am allergic to shellfish; etc)""", )
-    knowledge_id: Optional[int] = Field(..., alias='id', description="only use for update and delete operation")
+    knowledge_id: Optional[int] = Field(-1, alias='id', description="only use for update and delete operation")
 
 
 class ChatKnowledgeOpsType(ChatKnowledgeType):

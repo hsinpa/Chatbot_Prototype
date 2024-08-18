@@ -6,7 +6,7 @@ from langgraph.constants import END
 from langgraph.graph import StateGraph
 
 from agent.GraphAgent import GraphAgent
-from agent.agent_utility import streaming_exec, bot_variable
+from agent.agent_utility import streaming_exec, bot_variable, db_message_to_prompt
 from agent.chatbot.NarratorActionAgent import NarratorActionAgent
 from agent.chatbot.chatbot_type import ChatbotAgentState
 from model.chatbot_model import ChatbotNPCDBType, ChatbotUserEnum, ChatMessageDBInputType
@@ -26,7 +26,7 @@ class ChatbotGraphAgent(GraphAgent):
 
         self._narrator_agent = narrator_agent
         self._chatbot = chatbot
-
+        self._m_history = m_history[-5:]
         self._chatroom_summary = chatroom_summary
         self._streaming_input = streaming_input
         self._websocket = websocket
@@ -63,10 +63,14 @@ class ChatbotGraphAgent(GraphAgent):
         pass
 
     async def chat_chain(self, state: ChatbotAgentState):
-        prompt_template = ChatPromptTemplate.from_messages([
-            ("system", GENERAL_CHATBOT_SYSTEM_PROMPT),
-            ("user", GENERAL_HUMAN_PROMPT),
-        ])
+
+        prompt_template = db_message_to_prompt(system_prompt=GENERAL_CHATBOT_SYSTEM_PROMPT,
+                                               human_prompt=GENERAL_HUMAN_PROMPT,
+                                               messages=self._m_history)
+        # prompt_template = ChatPromptTemplate.from_messages([
+        #     ("system", GENERAL_CHATBOT_SYSTEM_PROMPT),
+        #     ("user", GENERAL_HUMAN_PROMPT),
+        # ])
 
         variables = {
             **bot_variable(self._chatbot, self._chatroom_summary),

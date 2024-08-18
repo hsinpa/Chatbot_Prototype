@@ -30,9 +30,7 @@ def chat_stream(c_input: ChatbotInput, background_tasks: BackgroundTasks):
 @router.get('/message_history/user/{user_id}/session/{session_id}')
 async def get_message_history(user_id: str, session_id: str):
     message_db = ChatbotMessagesDB()
-    print(user_id, session_id)
     f_messages = message_db.get_messages(user_id=user_id, session_id=session_id)
-    print(f_messages)
 
     return f_messages
 @router.get('/test_tool_calling')

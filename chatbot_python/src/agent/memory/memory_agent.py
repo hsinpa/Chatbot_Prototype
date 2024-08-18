@@ -15,6 +15,7 @@ from agent.tools.ultimate_json_parser import UltiToolsOutputParser
 from model.chatbot_model import ChatMessageDBInputType
 from utility.llm_static import LLMModel, get_model, OpenAI_Model_4o_mini
 from utility.simple_prompt_factory import SimplePromptFactory
+from utility.utility_method import get_langfuse_callback
 
 
 class MemoryGraphAgent(GraphAgent):
@@ -49,7 +50,9 @@ class MemoryGraphAgent(GraphAgent):
         llm = get_model(LLMModel.OpenAI, OpenAI_Model_4o_mini)
         llm_tool = llm.bind_tools([knowledge_ops_facade_tool])
 
-        chain = (prompt_template | llm_tool | UltiToolsOutputParser(tools=[ChatKnowledgeOpsType]))
+        chain = (prompt_template | llm_tool | UltiToolsOutputParser(tools=[ChatKnowledgeOpsType])).with_config(
+            {'callbacks': [get_langfuse_callback()], "run_name": 'Memory: function tool'}
+        )
 
         result = await chain.ainvoke({
             'interest': 'Fruit and everything from cook or baking',

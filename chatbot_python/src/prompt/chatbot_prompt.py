@@ -21,7 +21,7 @@ A summary of the story so far, used if as reference only
 {summary}
 '''
 
-To start the scenario, please describe the environment and lifeless objects the player is surrounded by.
+To start the scenario, please introduce the action of player, then describe the environment and lifeless objects the player is surrounded by.
 Do not suggest any actions to the player, just describe the physical environment and what is happening.
 
 The descriptions should be short and precise.\

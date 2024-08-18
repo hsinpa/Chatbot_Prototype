@@ -71,11 +71,19 @@ def db_message_to_str(messages: list[ChatMessageDBInputType]):
     return message_str
 
 
-def db_message_to_prompt(system_prompt: str, user_latest_input: str,
+def db_message_to_prompt(system_prompt: str, human_prompt: str,
                          messages: list[ChatMessageDBInputType]) -> ChatPromptTemplate:
     agent_message = [('system', system_prompt)]
 
-    agent_message.append(('user', user_latest_input))
+    # Ignore narrator
+    for message in messages:
+        if message.message_type == ChatbotUserEnum.human:
+            agent_message.extend([('user', message.body)])
+
+        if message.message_type == ChatbotUserEnum.bot:
+            agent_message.extend([('ai', message.body)])
+
+    agent_message.append(('user', human_prompt))
 
     prompt_template = ChatPromptTemplate(agent_message)
     return prompt_template
