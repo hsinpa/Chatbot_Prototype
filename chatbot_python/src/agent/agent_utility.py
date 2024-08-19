@@ -66,7 +66,7 @@ def reform_db_message(messages: list[ChatMessageDBInputType]):
 def db_message_to_str(messages: list[ChatMessageDBInputType]):
     message_str = ''
     for m in messages:
-        message_str += f'Message from {m.message_type.value}: \n{m.body}'
+        message_str += f'Message from {m.message_type.value}: \n{m.body}\n'
 
     return message_str
 

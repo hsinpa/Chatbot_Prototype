@@ -44,6 +44,8 @@ CREATE TABLE IF NOT EXISTS chatbot_memory (
     body text,
     attribute varchar(255),
     session_id varchar(255),
+    user_id varchar(255),
     created_date DATE NOT NULL DEFAULT CURRENT_DATE
 );
 CREATE INDEX memory_session_index ON chatbot_memory (session_id);
+CREATE INDEX memory_user_index ON chatbot_memory (user_id);

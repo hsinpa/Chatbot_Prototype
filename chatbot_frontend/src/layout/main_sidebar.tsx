@@ -40,7 +40,7 @@ export const MainSidebarView = function() {
     }
 
     return (
-        <div className={`side-panel bg-gray-100 h-full flex flex-col w-0 transition-all ${ui_panel_flag ? "p-1 w-52": ""}`}>
+        <div className={`side-panel bg-gray-100 h-full flex flex-col w-0 transition-all ${ui_panel_flag ? "p-1 w-60": ""}`}>
             <Render_Sidebar></Render_Sidebar>
         </div> 
    );

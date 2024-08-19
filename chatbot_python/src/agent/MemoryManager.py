@@ -2,7 +2,7 @@ import asyncio
 from asyncio import AbstractEventLoop
 from typing import Callable, Awaitable, List
 
-from pydantic.v1 import parse_obj_as
+from pydantic import parse_obj_as, TypeAdapter
 
 from agent.memory.memory_agent import MemoryGraphAgent
 from agent.memory.memory_type import ChatKnowledgeOpsType, Action, ChatKnowledgeType
@@ -31,13 +31,14 @@ class MemoryManager:
         asyncio.set_event_loop(loop)
         loop.run_until_complete(callback(*kargs))
 
-    async def _process_memory_db(self, session_id: str, knowledge_types: list[ChatKnowledgeOpsType]):
+    async def _process_memory_db(self, user_id: str, session_id: str, knowledge_types: list[ChatKnowledgeOpsType]):
         if knowledge_types is None:
             return
 
         for knowledge_type in knowledge_types:
             if knowledge_type.action == Action.Create:
-                await self._memory_db.create_memory(session_id, knowledge_type.attribute, knowledge_type.knowledge)
+                await self._memory_db.create_memory(user_id, session_id, knowledge_type.attribute,
+                                                    knowledge_type.knowledge)
 
             if knowledge_type.action == Action.Update:
                 await self._memory_db.update_memory(knowledge_type.knowledge_id, knowledge_type.attribute,
@@ -49,8 +50,10 @@ class MemoryManager:
     async def _start_memory_work(self, scenario: ChatScenarioDBType, chatroom_info: ChatRoomDBType,
                                  q_message: list[ChatMessageDBInputType]):
 
-        memory_dict = await self._memory_db.get_by_session_id(chatroom_info.session_id)
-        memory_knowledge = parse_obj_as(List[ChatKnowledgeType], memory_dict)
+        memory_dict = await self._memory_db.get_by_session_id(chatroom_info.user_id, chatroom_info.session_id)
+
+        user_list_adapter = TypeAdapter(List[ChatKnowledgeType])
+        memory_knowledge = user_list_adapter.validate_python(memory_dict)
 
         memory_agent = MemoryGraphAgent(chatroom_info.id, q_message, memory_knowledge)
         memory_graph = memory_agent.create_graph().with_config({
@@ -59,4 +62,5 @@ class MemoryManager:
         knowledge_types = await memory_graph.ainvoke({'messages': q_message})
 
         if 'knowledge_ops' in knowledge_types:
-            await self._process_memory_db(chatroom_info.session_id, knowledge_types['knowledge_ops'])
+            await self._process_memory_db(chatroom_info.user_id, chatroom_info.session_id,
+                                          knowledge_types['knowledge_ops'])
