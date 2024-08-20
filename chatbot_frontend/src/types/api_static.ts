@@ -1,7 +1,8 @@
 import { WebParamInterface } from "./chatbot_type";
 
 export const API = Object.freeze({
-    'Fetch_History': '/chatbot/message_history/user/{0}/session/{1}'
+    'Fetch_History': '/chatbot/message_history/user/{0}/session/{1}',
+    'Fetch_Memory': '/chatbot/memory/user/{0}/session/{1}'
 });
 
 export const Get_WS = function() {

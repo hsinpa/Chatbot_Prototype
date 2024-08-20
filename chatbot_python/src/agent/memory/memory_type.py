@@ -19,16 +19,14 @@ class Action(str, Enum):
 
 
 class ChatKnowledgeType(BaseModel):
+    model_config = ConfigDict(populate_by_name=True, arbitrary_types_allowed=True)
+
     attribute: Category = Field(...,
                                 description='Category that this knowledge belongs to. Only knowledge and item exist')
-    knowledge: str = Field(..., validation_alias='body',
+    knowledge: str = Field(..., alias=str('body'),
                            description="""Condensed bit of knowledge to be saved for future reference in the format:
 [person(s) this is relevant to] [fact to store] (e.g. Husband doesn't like tuna; I am allergic to shellfish; etc)""", )
     knowledge_id: Optional[int] = Field(default=None, validation_alias='id', description="only use for update and delete operation")
-
-    class Config:
-        arbitrary_types_allowed = True
-
 
 class ChatKnowledgeOpsType(ChatKnowledgeType):
     """A data structure, indicate perform to create, update, delete operation, if create or update,

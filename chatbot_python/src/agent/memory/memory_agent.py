@@ -2,7 +2,6 @@ from typing import List
 
 from langchain_core.output_parsers import JsonOutputParser
 from langchain_core.prompts import ChatPromptTemplate
-from langchain_core.tools import tool
 from langgraph.constants import END
 from langgraph.graph import StateGraph
 

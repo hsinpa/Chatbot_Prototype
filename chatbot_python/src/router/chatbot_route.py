@@ -1,3 +1,4 @@
+import asyncio
 import uuid
 
 from fastapi import APIRouter, BackgroundTasks
@@ -41,9 +42,10 @@ async def get_message_history(user_id: str, session_id: str):
 
 
 @router.get('/memory/user/{user_id}/session/{session_id}')
-async def get_message_history(user_id: str, session_id: str):
+def get_message_history(user_id: str, session_id: str):
     memory_db = ChatbotMemoryDB()
-    f_messages = await memory_db.get_by_session_id(user_id=user_id, session_id=session_id)
+
+    f_messages = asyncio.run(memory_db.get_by_session_id(user_id=user_id, session_id=session_id))
 
     return f_messages
 
