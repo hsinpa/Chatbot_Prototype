@@ -15,6 +15,7 @@ from model.chatbot_model import ChatMessageDBInputType
 from utility.llm_static import LLMModel, get_model, OpenAI_Model_4o_mini
 from utility.simple_prompt_factory import SimplePromptFactory
 from utility.utility_method import get_langfuse_callback
+from websocket.socket_static import SocketEvent
 
 
 class MemoryGraphAgent(GraphAgent):

@@ -17,9 +17,8 @@ from websocket.websocket_manager import get_websocket
 
 router = APIRouter(prefix="/chatbot", tags=["chatbot"])
 
-memory_manager = MemoryManager()
-chatbot_manager = ChatbotManager(memory_manager=memory_manager, websockets=get_websocket())
-
+memory_manager = MemoryManager(websocket=get_websocket())
+chatbot_manager = ChatbotManager(memory_manager=memory_manager, websocket=get_websocket())
 
 @router.post("/chat")
 async def chat(c_input: ChatbotInput):

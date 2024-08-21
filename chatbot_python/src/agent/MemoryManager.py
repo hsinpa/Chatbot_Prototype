@@ -1,4 +1,5 @@
 import asyncio
+import json
 from asyncio import AbstractEventLoop
 from typing import Callable, Awaitable, List
 
@@ -11,20 +12,22 @@ from model.chatbot_model import ChatScenarioDBType, ChatRoomDBType, ChatMessageD
 from threading import Thread
 
 from utility.utility_method import get_langfuse_callback
+from websocket.socket_static import SocketEvent
+from websocket.websocket_manager import WebSocketManager
 
 
 class MemoryManager:
 
-    def __init__(self):
+    def __init__(self, websocket: WebSocketManager):
         self._memory_db: ChatbotMemoryDB = ChatbotMemoryDB()
-        pass
+        self._websocket = websocket
 
     def queue_message(self, scenario: ChatScenarioDBType, chatroom_info: ChatRoomDBType,
-                      q_message: list[ChatMessageDBInputType]):
+                      websocket_id: str, q_message: list[ChatMessageDBInputType]):
         new_loop = asyncio.new_event_loop()  # Create a new event loop
 
         t = Thread(target=self._run_async_func, args=(self._start_memory_work, new_loop, scenario,
-                                                      chatroom_info, q_message))
+                                                      chatroom_info, websocket_id, q_message))
         t.start()
 
     def _run_async_func(self, callback: Callable[..., Awaitable[None]], loop: AbstractEventLoop, *kargs):
@@ -48,7 +51,7 @@ class MemoryManager:
                 await self._memory_db.delete_memory(knowledge_type.knowledge_id)
 
     async def _start_memory_work(self, scenario: ChatScenarioDBType, chatroom_info: ChatRoomDBType,
-                                 q_message: list[ChatMessageDBInputType]):
+                                 websocket_id: str, q_message: list[ChatMessageDBInputType]):
 
         memory_dict = await self._memory_db.get_by_session_id(chatroom_info.user_id, chatroom_info.session_id)
 
@@ -64,3 +67,8 @@ class MemoryManager:
         if 'knowledge_ops' in knowledge_types:
             await self._process_memory_db(chatroom_info.user_id, chatroom_info.session_id,
                                           knowledge_types['knowledge_ops'])
+
+            print('memory trigger : ' + websocket_id)
+            await self._websocket.send(socket_id=websocket_id, data=json.dumps({
+                'event': SocketEvent.memory, 'body': 'updated'
+            }))

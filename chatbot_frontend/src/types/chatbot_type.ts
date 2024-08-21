@@ -10,3 +10,10 @@ export interface MessageInterface {
     type: 'bot' | 'human' | 'narrator',
     version: number
 }
+
+export interface MemoryInterface {
+    id: string,
+    body: string,
+    attribute: 'knowledge' | 'item',
+    create_date: string
+}

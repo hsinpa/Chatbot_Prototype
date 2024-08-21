@@ -16,6 +16,7 @@ from router.chatbot_route_model import ChatbotStreamingInput
 from utility.llm_static import OpenAI_Model_4o_mini
 from utility.simple_prompt_factory import SimplePromptFactory
 from utility.utility_method import gpt_model
+from websocket.socket_static import SocketEvent
 from websocket.websocket_manager import WebSocketManager
 
 
@@ -80,7 +81,7 @@ class ChatbotGraphAgent(GraphAgent):
         chain = (prompt_template | gpt_model(model_name=OpenAI_Model_4o_mini) | StrOutputParser())
 
         stram_chain = chain.astream(variables)
-        result = await streaming_exec(websockets=self._websocket, websocket_id=self._streaming_input.websocket_id,
+        result = await streaming_exec(websockets=self._websocket, event_tag=SocketEvent.bot, websocket_id=self._streaming_input.websocket_id,
                                       session_id=self._streaming_input.session_id,
                                       token=self._streaming_input.token,
                                       bot_id=self._chatbot.id, identity=ChatbotUserEnum.bot,

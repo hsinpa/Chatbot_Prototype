@@ -16,6 +16,7 @@ from router.chatbot_route_model import ChatbotStreamingInput
 from utility.llm_static import LLMModel, Llama_3_1_8b, Grok_Llama_3_1_8b
 from utility.simple_prompt_factory import SimplePromptFactory
 from utility.utility_method import gpt_model
+from websocket.socket_static import SocketEvent
 from websocket.websocket_manager import WebSocketManager
 
 
@@ -68,10 +69,9 @@ class NarratorActionAgent(GraphAgent):
         stram_chain = chain.astream(variables)
 
         print('self._streaming_input', self._streaming_input)
-        result = await streaming_exec(websockets=self._websocket, session_id=self._streaming_input.session_id,
-                                      websocket_id=self._streaming_input.websocket_id,
-                                      token=self._streaming_input.token, bot_id=self._narrator.id,
-                                      identity=ChatbotUserEnum.narrator,
+        result = await streaming_exec(websockets=self._websocket, event_tag=SocketEvent.bot,
+                                      session_id=self._streaming_input.session_id, websocket_id=self._streaming_input.websocket_id,
+                                      token=self._streaming_input.token, bot_id=self._narrator.id, identity=ChatbotUserEnum.narrator,
                                       stream=stram_chain)
         return {'narrator_response': result, 'final_message': [result]}
 

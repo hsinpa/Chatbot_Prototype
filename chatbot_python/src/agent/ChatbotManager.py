@@ -19,9 +19,9 @@ from websocket.websocket_manager import WebSocketManager
 
 class ChatbotManager:
 
-    def __init__(self, memory_manager: MemoryManager, websockets: WebSocketManager):
+    def __init__(self, memory_manager: MemoryManager, websocket: WebSocketManager):
         self._memory = memory_manager
-        self._websockets = websockets
+        self._websockets = websocket
         self.chatbot_message_db = ChatbotMessagesDB()
         self.chatroom_db = ChatRoomDB()
         self.npc_db = ChatbotNpcDB()
@@ -82,7 +82,7 @@ class ChatbotManager:
 
         messages = self._save_message_to_db(c_input, chatroom_db_type, bot_message)
         self.chatbot_message_db.update_summary(chatroom_db_type.id, result['new_chatroom_summary'])
-        self._memory.queue_message(scenario_db_type, chatroom_db_type, messages)
+        self._memory.queue_message(scenario_db_type, chatroom_db_type, c_input.websocket_id, messages)
 
         return result
 
