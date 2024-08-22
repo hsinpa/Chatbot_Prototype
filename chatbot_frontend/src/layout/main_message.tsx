@@ -105,10 +105,10 @@ export const MainMessageView = function() {
     }
 
     useEffect(() => {
-        socket_manager?.ListenToEvent('websocket', on_socket_message);
+        socket_manager?.ListenToEvent('websocket', 'main_content_socket', on_socket_message);
 
         return () => {
-            socket_manager?.Deregister('websocket');
+            socket_manager?.Deregister('websocket', 'main_content_socket');
         }
 
     }, [socket_manager])

@@ -72,10 +72,10 @@ export const MainSidebarView = function() {
 
 
     useEffect(() => {
-        socket_manager?.ListenToEvent('websocket', on_socket_message);
+        socket_manager?.ListenToEvent('websocket', 'sidebar_socket', on_socket_message);
 
         return () => {
-            socket_manager?.Deregister('websocket');
+            socket_manager?.Deregister('websocket', 'sidebar_socket');
         }
 
     }, [socket_manager]);

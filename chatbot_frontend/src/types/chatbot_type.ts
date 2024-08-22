@@ -14,6 +14,6 @@ export interface MessageInterface {
 export interface MemoryInterface {
     id: string,
     body: string,
-    attribute: 'knowledge' | 'item',
+    attribute: 'Knowledge' | 'Item',
     create_date: string
 }

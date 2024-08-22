@@ -6,25 +6,32 @@ class EventSystem {
         this._events = {};
     }
     
-    ListenToEvent(event_id : string, callback : any) {
+    ListenToEvent(event_id : string, key: string, callback : any) {
 
         if (this._events.hasOwnProperty(event_id)) {
-            this._events[event_id] = callback;
+            this._events[event_id][key] = callback;
             return;
         }
 
-        this._events[event_id] = callback;
+        this._events[event_id] = { key: callback};
     }
 
-    Deregister(event_id : string) {
+    Deregister(event_id : string, key: string) {
         if (this._events.hasOwnProperty(event_id)) {
-            delete this._events[event_id]
+            if (this._events[event_id].hasOwnProperty(key)) {
+                delete this._events[event_id][key];
+            }
         }
     }
 
     Notify(event_id : string, parameters? : any) {
         if (this._events.hasOwnProperty(event_id) && this._events[event_id] != null) {
-            this._events[event_id](event_id, parameters)
+
+            for (let key in this._events[event_id]) {
+                this._events[event_id][key]?.(event_id, parameters);
+            }
+
+            // this._events[event_id](event_id, parameters)
         }  
     }
 }
